@@ -1,0 +1,48 @@
+.toast-container {
+    animation: notif 1s ease forwards;
+}
+
+.toast {
+    box-shadow: 0 0 10px 1px rgba(255, 255, 255, .1);
+    background-clip: border-box;
+    background-color: rgb(26, 26, 46);
+
+}
+
+.toast-header {
+    background-color: #2a2a3e;
+    color: whitesmoke;
+}
+
+.toast-header svg {
+    width: 1rem;
+    fill: #00aaff;
+    animation: bell 1s 1s;
+    transform-origin: top center;
+}
+
+.toast-body {
+    color: whitesmoke;
+    background-color: rgb(26, 26, 46);
+}
+
+@keyframes notif{
+    0% {
+        transform: translateX(100%);
+    }
+    80% {
+        transform: translateX(-5%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes bell {
+    0%, 100% { transform: rotate(0); }
+    15% { transform: rotate(25deg); }
+    30% { transform: rotate(-20deg); }
+    45% { transform: rotate(15deg); }
+    60% { transform: rotate(-10deg); }
+    75% { transform: rotate(5deg); }
+}

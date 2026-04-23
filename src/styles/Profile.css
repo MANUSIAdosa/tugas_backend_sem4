@@ -1,0 +1,453 @@
+
+/* MAIN */
+.profile-main {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 2;
+}
+
+/* CONTAINER */
+.profile-container {
+  width: 100%;
+  max-width: 900px;
+  background: rgba(26, 26, 46, 0.92);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 0 50px rgba(0, 242, 255, 0.15);
+  backdrop-filter: blur(14px);
+}
+
+/* HEADER */
+.profile-header {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.avatar-wrapper {
+  position: relative;
+}
+
+.profile-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #00f2ff;
+  box-shadow: 0 0 25px rgba(0, 242, 255, 0.4);
+}
+
+/* LEVEL */
+.level-badge {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: radial-gradient(circle, #7000ff, #000);
+  color: white;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  box-shadow: 0 0 15px #7000ff;
+}
+
+/* INFO */
+.profile-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edit-icon img {
+  width: 26px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.edit-icon img:hover {
+  opacity: 1;
+}
+
+.profile-details {
+  margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 15px;
+  font-size: 0.9rem;
+}
+
+.profile-details span {
+  color: #00f2ff;
+}
+
+.security-link {
+  display: inline-block;
+  margin-top: 20px;
+  color: #00f2ff;
+  text-decoration: none;
+}
+
+.security-link:hover {
+  text-decoration: underline;
+}
+
+/* ACCOUNT SETTINGS */
+.account-settings h2 {
+  font-family: 'Orbitron', sans-serif;
+  margin-bottom: 20px;
+}
+
+.setting-item {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.setting-item label {
+  color: #aaa;
+}
+
+.setting-item input {
+  padding: 10px;
+  background: #000;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 6px;
+}
+
+.setting-item button {
+  padding: 8px 14px;
+  background: linear-gradient(90deg, #00f2ff, #ff0055);
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.setting-item button:hover {
+  filter: brightness(1.2);
+}
+
+.setting-item.danger {
+  justify-content: flex-end;
+}
+
+.delete-btn {
+  background: transparent;
+  border: 1px solid #ff0055;
+  color: #ff0055;
+}
+
+.delete-btn:hover {
+  background: #ff0055;
+  color: white;
+}
+
+/* NOTIFICATION STYLES */
+.login-required-notification {
+  text-align: center;
+  padding: 60px 40px;
+}
+
+.notification-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 25px;
+  background: rgba(0, 242, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-icon img {
+  width: 40px;
+  height: 40px;
+  filter: invert(66%) sepia(93%) saturate(434%) hue-rotate(146deg) brightness(102%) contrast(101%);
+}
+
+/* login required */
+.login-required-container {
+  max-width: 500px;
+  margin: 80px auto;
+  background: rgba(30, 9, 63, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.login-required-notification h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #00f2ff;
+}
+
+.login-required-notification p {
+  color: #aaa;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.auth-btn {
+  padding: 12px 35px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  font-family: 'Orbitron', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.login-btn {
+  background: linear-gradient(90deg, #00f2ff, #0088ff);
+  color: white;
+  border: none;
+}
+
+.register-btn {
+  background: transparent;
+  color: #00f2ff;
+  border: 2px solid #00f2ff;
+}
+
+.login-btn:hover {
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.register-btn:hover {
+  background: rgba(0, 242, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.guest-note {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.guest-note a {
+  color: #00f2ff;
+  text-decoration: none;
+}
+
+.guest-note a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .auth-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .auth-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Tambahkan di Profile.css */
+
+/* Edit mode styling */
+.edit-mode-container {
+  grid-column: 2 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-mode-container input {
+  width: 100%;
+  padding: 10px;
+  background: #111;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 6px;
+}
+
+.edit-mode-container input.error {
+  border-color: #ff0055;
+  background: rgba(255, 0, 85, 0.1);
+}
+
+.error-message {
+  color: #ff0055;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.edit-buttons button {
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.edit-buttons button:first-child {
+  background: linear-gradient(90deg, #00f2ff, #0088ff);
+  border: none;
+  color: white;
+}
+
+.edit-buttons .cancel-btn {
+  background: transparent;
+  border: 1px solid #666;
+  color: #aaa;
+}
+
+.edit-buttons button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.edit-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Inline edit styling */
+.inline-edit-input,
+.inline-edit-select {
+  background: #111;
+  border: 1px solid #444;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-left: 10px;
+}
+
+.inline-edit-select {
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.inline-save-btn,
+.inline-cancel-btn {
+  margin-left: 10px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.inline-save-btn {
+  background: #00f2ff;
+  color: black;
+  border: none;
+}
+
+.inline-cancel-btn {
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #666;
+}
+
+.inline-edit-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: 10px;
+  cursor: pointer;
+  opacity: 0.7;
+  vertical-align: middle;
+}
+
+.inline-edit-icon:hover {
+  opacity: 1;
+}
+
+/* Avatar upload */
+.avatar-wrapper {
+  position: relative;
+}
+
+.avatar-upload {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.avatar-upload-label {
+  background: rgba(0, 242, 255, 0.9);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid white;
+  transition: all 0.3s;
+}
+
+.avatar-upload-label:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+}
+
+.avatar-upload-label img {
+  width: 18px;
+  height: 18px;
+  filter: brightness(0) invert(1);
+}
+
+/* Profile details edit */
+.profile-details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.profile-details .edit-icon {
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.profile-details .edit-icon:hover {
+  opacity: 1;
+}
+
+/* Success alert */
+.alert-success {
+  background: rgba(0, 242, 255, 0.1);
+  border: 1px solid rgba(0, 242, 255, 0.3);
+  color: #00f2ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

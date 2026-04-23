@@ -1,0 +1,64 @@
+
+
+.about-main {
+    position: relative;
+    z-index: 2;
+    padding-top: 1px;
+    padding-inline: 3%;
+    background: transparent;
+    padding-bottom: 100px;
+    background-color: rgba(26, 26, 46, 0.8);
+    padding-top: 50px;
+    padding-bottom: 100px;
+    min-height: 100vh;
+}
+
+.about-container {
+    border-radius: 20px;
+    background-color: #2a2a3e;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 30px; 
+    max-width: 800px; 
+    margin: 0 auto; 
+    align-items: center; 
+    text-align: center; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.about-container img {
+    width: 20%;
+    min-width: 120px;     
+    filter: drop-shadow(0 0 1px black);
+    margin-bottom: 25px; 
+}
+
+.about-container h3 {
+    margin: 0;
+    margin-bottom: 10px; 
+    font-size: 1.5em; 
+}
+
+.about-container .about-isi-dalam {
+    margin: 0; 
+    line-height: 1.6; 
+}
+
+.about-container .about-isi {
+    text-align: left;
+    width: 100%;
+}
+
+.about-hr-modern {
+    border: 0;                 /* Hapus border bawaan */
+    height: 2px;               /* Atur ketebalan garis */
+    background-color: #555;    /* Ganti dengan warna yang Anda suka */
+    width: 50%;
+    margin: 25px auto;         /* Memberi jarak atas/bawah 25px, dan 'auto' membuatnya ke tengah */
+}
+
+/* ------------- Penutup bagian main ------------- */
+
+
+

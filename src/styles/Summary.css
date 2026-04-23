@@ -1,0 +1,105 @@
+
+
+/*
+ * CSS Khusus untuk Halaman Sukses Pembayaran
+ */
+
+
+.success-header {
+    margin-top: 1rem;
+    background-color: #F0F8F0;
+    padding: 3rem 0;
+    text-align: center;
+    border-bottom: 1px solid #E0E0E0;
+    border-radius: 2rem;
+}
+
+.success-icon {
+    font-size: 4.5rem;
+    color: #28a745;
+    line-height: 1;
+}
+
+.success-header h1 {
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 0.25rem;
+}
+
+.success-header .lead {
+    color: #555;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+/* Bagian Konten Rincian di Bawah */
+.receipt-section {
+    padding: 40px 0 60px 0;
+}
+
+/* Kartu Rincian */
+.receipt-card {
+    background-color: #2a2a3e;
+    border: 1px solid #40405a;
+    border-radius: 12px;
+    box-shadow: none;
+    color: #E0E0E0;
+}
+
+.receipt-card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #40405a;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #FFFFFF;
+}
+
+.receipt-card-body {
+    padding: 1.5rem;
+}
+
+/* Judul sub-kategori (DETAIL PEMBELIAN) */
+.receipt-subtitle {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #ADB5BD;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+/* --- Detail Rincian (List) --- */
+.receipt-details .list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #40405a !important;
+    background-color: transparent;
+}
+
+.receipt-details .list-group-item:last-child {
+    border-bottom: none !important;
+}
+
+.receipt-details .list-group-item span {
+    color: #ADB5BD;
+    font-size: 0.95rem;
+}
+
+.receipt-details .list-group-item strong {
+    color: #E0E0E0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: right;
+}
+
+.receipt-details .list-group-item.payment-total span {
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.receipt-details .list-group-item.payment-total strong {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #FFFFFF;
+}

@@ -1,0 +1,115 @@
+header {
+    position: relative;
+    z-index: 3;
+}
+
+header img {
+    filter: drop-shadow(0 0 1px black);
+    margin-right: 20px;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    box-shadow: 0px 10px 20px 0px rgba(0, 0, 0, 0.2);
+    padding-inline: 1rem;
+    background-color: #2a2a3e;
+}
+
+.navbar .nav-link {
+    color: #f0f0f0 !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+    color: #ffffff !important;
+}
+
+.navbar .dropdown-toggle {
+    color: #f0f0f0 !important;
+}
+
+.navbar .dropdown-toggle:hover {
+    color: #00aaff !important;
+}
+
+.dropdown-menu {
+    background-color: #2a2a3e;
+    border: 1px solid #444;
+}
+
+.dropdown-item {
+    color: #f0f0f0;
+}
+
+.dropdown-item:hover {
+    background-color: #00aaff;
+    color: #1a1a2e;
+}
+
+.header-profile-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0px 5px 0px 5px;
+}
+
+.nav-item {
+    list-style: none;
+}
+
+.navbar-toggler {
+    background-color: rgb(79, 79, 114);
+}
+
+li > a {
+    font-family: 'Courier New', Courier, monospace !important;
+    text-decoration: none;
+    color: #f0f0f0;
+    transition: color 0.2s ease-in-out;
+}
+
+li > a:hover {
+    color: #00aaff;
+}
+
+/* Header.css - Tambahkan saja di bagian bawah file */
+.header-profile-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.header-profile-icon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+}
+
+.nav-link.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  color: #fff !important;
+}
+
+/* Untuk highlight username yang login */
+.user-logged-in {
+  color: #00f2ff !important;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-link.dropdown-toggle {
+    justify-content: center;
+    padding: 10px 0;
+  }
+  
+  .header-profile-icon {
+    margin-right: 5px;
+  }
+}

@@ -1,0 +1,83 @@
+.history-main {
+    background-color: rgba(26, 26, 46,.8);
+
+}
+
+.history-lacak {
+    width: 100%;
+    padding: 2rem 3rem;
+    box-shadow: 0px 5px 20px rgba(255, 255, 255, .2);
+    background-color: rgba(26, 26, 46);
+
+}
+
+.history-lacak h1 {
+    margin: 0;
+    margin-bottom: 1rem;
+}
+
+.history-lacak .history-input-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.history-lacak .history-input-wrap label {
+    margin-bottom: .5rem;
+}
+
+.history-lacak .history-input-wrap input {
+    width: 50%;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    padding: .5rem 1rem;
+}
+
+.history-lacak svg{
+    width: 1rem;
+    margin-right: .3rem;
+    fill: whitesmoke;
+}
+
+.history-lacak button {
+    border: none;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: .5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    color: whitesmoke;
+}
+
+.history-section {
+    margin-inline: 15%;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+.history-table-container {
+    overflow-x: auto;
+}
+
+.history-table-container table {
+    width: 100%;
+    border-radius: 16px;
+    border-spacing: 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.history-table-container table .history-stat-suc {
+    padding: .4rem;
+    background-color: rgba(255, 255, 255, 0.3);
+    width: fit-content;
+    border-radius: 5px;
+}
+
+.history-table-container th, .history-table-container td {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 1rem;
+}
