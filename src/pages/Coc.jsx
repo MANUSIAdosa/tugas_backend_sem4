@@ -26,7 +26,7 @@ const DiamondCard = ({ qty, price, disc, discPrice, index, activeIndex, setActiv
           <div className={`game-card card ${index === activeIndex ? 'active' : ''}`} onClick={() => setActiveDiamondIndex(index === activeIndex ? null : index)}>
             <p>{qty} Gem</p>
             <div className="game-img-container">
-              <img src="/asset/logo_game/diamond.png" alt="" />
+              <img src="/asset/logo_game/gems.png" alt="" />
             </div>
             <div className="game-card-bottom">
               <p>Dari</p>
@@ -95,7 +95,7 @@ const Coc = () => {
       return
     }
     if (activeDiamondIndex === null) {
-      setNotification({msg : "Silahkan Pilih Jumlah Diamond", id : Date.now()})
+      setNotification({msg : "Silahkan Pilih Jumlah Gems", id : Date.now()})
       return
     } 
     if (activePaymentIndex === null){
