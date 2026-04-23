@@ -95,7 +95,7 @@ const Roblox = () => {
       return
     }
     if (activeDiamondIndex === null) {
-      setNotification({msg : "Silahkan Pilih Jumlah Diamond", id : Date.now()})
+      setNotification({msg : "Silahkan Pilih Jumlah Robux", id : Date.now()})
       return
     } 
     if (activePaymentIndex === null){
