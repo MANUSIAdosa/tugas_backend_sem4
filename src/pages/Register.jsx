@@ -51,49 +51,26 @@ const Register = () => {
     }
 
     try {
-      // Simulasi delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Kirim request ke backend API
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          username: formData.username,
+          password: formData.password
+        })
+      });
 
-      // Ambil data user yang sudah ada
-      const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const result = await response.json();
 
-      // Cek apakah username sudah terdaftar
-      const usernameExists = storedUsers.some(user => user.username === formData.username);
-      if (usernameExists) {
-        setError('Username sudah terdaftar');
+      if (!response.ok) {
+        setError(result.message || 'Registrasi gagal');
         setIsLoading(false);
         return;
       }
-
-      // Cek apakah email sudah terdaftar
-      const emailExists = storedUsers.some(user => user.email === formData.email);
-      if (emailExists) {
-        setError('Email sudah terdaftar');
-        setIsLoading(false);
-        return;
-      }
-
-      // Buat user baru
-      const newUser = {
-        id: 'user-' + Date.now(),
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        avatar: "/asset/profile.png",
-        level: 1,
-        joinDate: new Date().toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric'
-        }),
-        birthday: "01-Jan-2000",
-        gender: "Female",
-        point: 0,
-      };
-
-      // Simpan ke localStorage
-      storedUsers.push(newUser);
-      localStorage.setItem('users', JSON.stringify(storedUsers));
 
       // Reset form
       setFormData({
@@ -111,7 +88,7 @@ const Register = () => {
       }, 2000);
 
     } catch (err) {
-      setError('Terjadi kesalahan. Silakan coba lagi.');
+      setError('Terjadi kesalahan. Pastikan server backend berjalan di http://localhost:3000');
       console.error('Registration error:', err);
     } finally {
       setIsLoading(false);

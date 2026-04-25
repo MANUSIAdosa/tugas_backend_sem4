@@ -19,7 +19,7 @@ const Profile = () => {
     password: '',
     confirmPassword: '',
     birthday: '',
-    gender: 'Female'
+    gender: ''
   });
   
   const [errors, setErrors] = useState({});
@@ -34,7 +34,7 @@ const Profile = () => {
         const authToken = localStorage.getItem('authToken');
         const storedUser = localStorage.getItem('userData');
         const currentUser = localStorage.getItem('currentUser');
-        
+
         // Cek apakah user benar-benar login (ada authToken)
         if (!authToken) {
           setUserData(null);
@@ -44,15 +44,15 @@ const Profile = () => {
             password: '',
             confirmPassword: '',
             birthday: '',
-            gender: 'Female'
+            gender: ''
           });
           return;
         }
-        
+
         // Prioritize currentUser, fallback to userData
-        const user = currentUser ? JSON.parse(currentUser) : 
+        const user = currentUser ? JSON.parse(currentUser) :
                     storedUser ? JSON.parse(storedUser) : null;
-        
+
         if (user) {
           setUserData(user);
           setFormData({
@@ -60,8 +60,8 @@ const Profile = () => {
             email: user.email || '',
             password: '',
             confirmPassword: '',
-            birthday: user.birthday || '01-Jan-2000',
-            gender: user.gender || 'Female'
+            birthday: user.birthday || '',
+            gender: user.gender || ''
           });
         } else {
           setUserData(null);
@@ -73,7 +73,7 @@ const Profile = () => {
     };
 
     loadUserData();
-    
+
     // Listen for storage changes (from other tabs or logout)
     const handleStorageChange = (e) => {
       if (e.key === 'userData' || e.key === 'authToken' || e.key === 'currentUser') {
@@ -106,11 +106,21 @@ const Profile = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+  };
+
+  // Handle gender change
+  const handleGenderChange = (e) => {
+    const selectedValue = e.target.value;
+    console.log('Gender selected:', selectedValue);
+    setFormData(prev => ({
+      ...prev,
+      gender: selectedValue
+    }));
   };
 
   // Validate field
@@ -172,12 +182,17 @@ const Profile = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-    // Handle save 
+  // Handle save
   const handleSave = async (field) => {
     const value = formData[field];
-    
+    console.log(`Saving ${field}:`, value);
+
     // Validasi field
-    if (!validateField(field, value)) {
+    const isValid = validateField(field, value);
+    console.log(`Validation result for ${field}:`, isValid);
+
+    if (!isValid) {
+      console.log('Validation failed, aborting save');
       return;
     }
 
@@ -185,55 +200,24 @@ const Profile = () => {
     setSuccessMessage('');
 
     try {
-      // Simulasi API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       let updatedData = {};
-      
-      // Ambil data users dari localStorage
-      const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-      
+
       switch(field) {
         case 'username':
-          // Cek username unique di localStorage
-          const usernameExists = allUsers.some(
-            user => user.username === value && user.id !== userData?.id
-          );
-          
-          if (usernameExists) {
-            setErrors({ username: 'Username sudah digunakan' });
-            setIsLoading(false);
-            return;
-          }
-          
           updatedData = { username: value };
           break;
-          
+
         case 'email':
-          // Cek email unique
-          const emailExists = allUsers.some(
-            user => user.email === value && user.id !== userData?.id
-          );
-          
-          if (emailExists) {
-            setErrors({ email: 'Email sudah digunakan' });
-            setIsLoading(false);
-            return;
-          }
-          
           updatedData = { email: value };
           break;
-          
+
         case 'password':
           if (!value) {
             setErrors({ password: 'Password harus diisi' });
             setIsLoading(false);
             return;
           }
-          
-          // Update password (dalam produksi harus di-hash)
           updatedData = { password: value };
-          
           // Clear password fields setelah save
           setFormData(prev => ({
             ...prev,
@@ -241,45 +225,55 @@ const Profile = () => {
             confirmPassword: ''
           }));
           break;
-          
+
         case 'birthday':
           updatedData = { birthday: value };
           break;
-          
+
         case 'gender':
           updatedData = { gender: value };
           break;
-          
+
         default:
           break;
+      }
+
+      // Kirim request ke backend API
+      const response = await fetch(`/api/profile/${userData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setErrors({ [field]: result.message || 'Gagal mengupdate data' });
+        setIsLoading(false);
+        return;
       }
 
       // Update userData di state
       const updatedUser = { ...userData, ...updatedData };
       setUserData(updatedUser);
-      
-      // Update localStorage - USERDATA dan CURRENTUSER
+
+      // Update localStorage
       localStorage.setItem('userData', JSON.stringify(updatedUser));
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-      
-      // YANG PENTING: UPDATE JUGA DI ARRAY USERS
-      const updatedUsers = allUsers.map(user => 
-        user.id === userData?.id ? { ...user, ...updatedData } : user
-      );
-      localStorage.setItem('users', JSON.stringify(updatedUsers));
-      
-      // Update form data (kecuali password)
+
+      // Update form data
       setFormData(prev => ({
         ...prev,
-        ...updatedData,
-        ...(field === 'password' ? { password: '', confirmPassword: '' } : {})
+        ...updatedData
       }));
-      
+
       // Tampilkan success message
       setSuccessMessage(`${field.charAt(0).toUpperCase() + field.slice(1)} berhasil diupdate!`);
 
       window.dispatchEvent(new CustomEvent('userDataUpdated', { detail: updatedUser }));
-      
+
       // Keluar dari edit mode setelah 2 detik
       setTimeout(() => {
         setEditMode(prev => ({ ...prev, [field]: false }));
@@ -287,7 +281,7 @@ const Profile = () => {
       }, 2000);
 
     } catch (error) {
-      setErrors({ [field]: 'Terjadi kesalahan. Silakan coba lagi.' });
+      setErrors({ [field]: 'Terjadi kesalahan. Pastikan backend berjalan.' });
       console.error('Update error:', error);
     } finally {
       setIsLoading(false);
@@ -298,66 +292,85 @@ const Profile = () => {
   const handleCancel = (field) => {
     setEditMode(prev => ({ ...prev, [field]: false }));
     setErrors(prev => ({ ...prev, [field]: '' }));
-    
+
     // Reset ke nilai semula
     if (userData) {
       setFormData(prev => ({
         ...prev,
-        [field]: userData[field] || 
-                (field === 'birthday' ? '01-Jan-2000' : 
-                 field === 'gender' ? 'Female' : '')
+        [field]: userData[field] || ''
       }));
     }
   };
 
   // Handle avatar upload
-  const handleAvatarUpload = (e) => {
+  const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const avatarUrl = reader.result;
-        
-        // Update state
-        setUserData(prev => ({ ...prev, avatar: avatarUrl }));
-        
-        // Update localStorage
-        const updatedUser = { ...userData, avatar: avatarUrl };
-        localStorage.setItem('userData', JSON.stringify(updatedUser));
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-        
-        // Update users array
-        const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-        const updatedUsers = allUsers.map(user => 
-          user.id === userData?.id ? { ...user, avatar: avatarUrl } : user
-        );
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
-        
-        // Show success message
-        setSuccessMessage('Foto profil berhasil diupdate!');
-        setTimeout(() => setSuccessMessage(''), 2000);
-      };
-      reader.readAsDataURL(file);
+    if (!file || !userData?.id) return;
+
+    const formDataUpload = new FormData();
+    formDataUpload.append('avatar', file);
+    formDataUpload.append('userId', userData.id);
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/upload-avatar', {
+        method: 'POST',
+        body: formDataUpload
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setErrors({ avatar: result.message || 'Gagal upload avatar' });
+        setIsLoading(false);
+        return;
+      }
+
+      // Update state dengan URL avatar dari backend
+      const avatarUrl = result.data.avatar;
+      const updatedUser = { ...userData, avatar: avatarUrl };
+
+      setUserData(updatedUser);
+      localStorage.setItem('userData', JSON.stringify(updatedUser));
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+      setSuccessMessage('Foto profil berhasil diupdate!');
+      setTimeout(() => setSuccessMessage(''), 2000);
+
+    } catch (error) {
+      setErrors({ avatar: 'Terjadi kesalahan. Pastikan backend berjalan.' });
+      console.error('Upload error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Handle delete account
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (window.confirm('Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan!')) {
       setIsLoading(true);
-      
+
       try {
-        // Hapus dari users array
-        const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-        const updatedUsers = storedUsers.filter(user => user.id !== userData?.id);
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
-        
+        // Call API backend untuk delete user
+        const response = await fetch(`/api/deleteUser/${userData.id}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert(result.message || 'Gagal menghapus akun');
+          setIsLoading(false);
+          return;
+        }
+
         // Hapus SEMUA session data
         localStorage.removeItem('userData');
         localStorage.removeItem('authToken');
         localStorage.removeItem('currentUser');
         localStorage.removeItem('loginTime');
-        
+
         // Reset state
         setUserData(null);
         setFormData({
@@ -366,18 +379,18 @@ const Profile = () => {
           password: '',
           confirmPassword: '',
           birthday: '',
-          gender: 'Female'
+          gender: ''
         });
-        
+
         // Redirect ke home
         navigate('/');
-        
+
         // Show goodbye message
         alert('Akun berhasil dihapus. Selamat tinggal!');
-        
+
       } catch (error) {
         console.error('Delete account error:', error);
-        alert('Terjadi kesalahan saat menghapus akun.');
+        alert('Terjadi kesalahan saat menghapus akun. Pastikan server backend berjalan.');
       } finally {
         setIsLoading(false);
       }
@@ -510,7 +523,7 @@ const Profile = () => {
               <div className="profile-details">
                 <p>Join since: <span>{userData.joinDate || "15-Nov-2023"}</span></p>
                 <p>
-                  Bday: 
+                  Bday:
                   <span>
                     {editMode.birthday ? (
                       <input
@@ -522,7 +535,7 @@ const Profile = () => {
                         className="inline-edit-input"
                       />
                     ) : (
-                      userData.birthday || "01-Jan-2000"
+                      userData.birthday || "-"
                     )}
                     {editMode.birthday ? (
                       <>
@@ -551,21 +564,22 @@ const Profile = () => {
                   </span>
                 </p>
                 <p>
-                  Gender: 
+                  Gender:
                   <span>
                     {editMode.gender ? (
                       <select
                         name="gender"
-                        value={formData.gender}
-                        onChange={handleInputChange}
+                        value={formData.gender || ''}
+                        onChange={handleGenderChange}
                         className="inline-edit-select"
                       >
+                        <option value="">-</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
                       </select>
                     ) : (
-                      userData.gender || "Sex?"
+                      userData.gender || "-"
                     )}
                     {editMode.gender ? (
                       <>
