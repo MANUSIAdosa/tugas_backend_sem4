@@ -418,6 +418,9 @@ const Profile = () => {
           gender: ''
         });
 
+        // ⭐ Kirim event supaya Header update jadi GUEST
+        window.dispatchEvent(new Event('userLoggedOut'));
+
         // Redirect ke home
         navigate('/');
 
