@@ -121,6 +121,11 @@ class UserService extends BaseService {
   }
 
   async deleteUser(userId) {
+    // Hapus transaksi terkait terlebih dahulu
+    await this.prisma.transactions.deleteMany({
+      where: { userId: userId }
+    });
+    // Baru hapus user
     return await this.prisma.users.delete({ where: { id: userId } });
   }
 }
