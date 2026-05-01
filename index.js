@@ -6,6 +6,8 @@ import { UserService, TransactionService, PointConfigService } from './src/servi
 
 const app = express();
 
+app.get('/api/test', (req, res) => res.json({ ok: true }));
+
 // Inisialisasi service class
 const userService = new UserService(prisma);
 const transactionService = new TransactionService(prisma);
@@ -227,6 +229,17 @@ app.get('/api/points/config/:userId', async (req, res) => {
     res.json({ success: true, data: config });
   } catch (err) {
     pointConfigService.handleError(res, err, "Gagal mengambil konfigurasi poin");
+  }
+});
+
+// Get user's mileage progress to next tier
+app.get('/api/points/mileage/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const mileage = await pointConfigService.getMileage(userId);
+    res.json({ success: true, data: mileage });
+  } catch (err) {
+    pointConfigService.handleError(res, err, "Gagal mengambil data mileage");
   }
 });
 

@@ -25,6 +25,7 @@ const Profile = () => {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mileage, setMileage] = useState(null);
   const navigate = useNavigate();
 
   // Load user data dari sessionStorage saat komponen mount
@@ -85,6 +86,20 @@ const Profile = () => {
     // window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  // Fetch mileage progress data
+  useEffect(() => {
+    if (userData?.id) {
+      fetch(`/api/points/mileage/${userData.id}`)
+        .then(res => res.json())
+        .then(result => {
+          if (result.success && result.data) {
+            setMileage(result.data);
+          }
+        })
+        .catch(err => console.error("Failed to fetch mileage:", err));
+    }
+  }, [userData?.id]);
 
   // Toggle edit mode
   const toggleEditMode = (field) => {
@@ -514,7 +529,7 @@ const Profile = () => {
                 className="profile-avatar"
               />
               <span className="level-badge">{userData.level || 1}</span>
-              
+
               {/* Avatar Upload Button */}
               <div className="avatar-upload">
                 <input
@@ -631,6 +646,45 @@ const Profile = () => {
                   </span>
                 </p>
               </div>
+
+              {/* MILeAGE PROGRESS */}
+              {mileage && (
+                <section className="mileage-section mt-4">
+                  <h3>Progress Tier</h3>
+                  <div className="current-tier mb-2">
+                    <strong>Tier Saat Ini: {mileage.currentTier.tierName.toUpperCase()} (Level {mileage.currentTier.levelNumber})</strong>
+                    <span className="reward-rate">Reward Rate: {(mileage.currentTier.rewardRate * 100).toFixed(1)}%</span>
+                  </div>
+
+                  {mileage.nextTier ? (
+                    <>
+                      <div className="progress mb-2" style={{ height: '25px' }}>
+                        <div
+                          className="progress-bar progress-bar-striped progress-bar-animated"
+                          role="progressbar"
+                          style={{ width: `${mileage.progress}%` }}
+                          aria-valuenow={mileage.progress}
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        >
+                          {mileage.progress > 5 ? `${mileage.progress}%` : ''}
+                        </div>
+                      </div>
+                      <div className="mileage-info">
+                        <small>
+                          Total pengeluaran: Rp {mileage.totalSpent.toLocaleString('id-ID')} |
+                          Kurang: Rp {mileage.amountNeeded.toLocaleString('id-ID')} lagi untuk mencapai tier {mileage.nextTier.tierName.toUpperCase()}
+                          (Reward: {(mileage.nextTier.rewardRate * 100).toFixed(1)}%)
+                        </small>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="alert alert-success">
+                      <strong>SELAMAT! Anda telah mencapai tier maksimal (PLATINUM)</strong>
+                    </div>
+                  )}
+                </section>
+              )}
 
               <div>
                 <a className="security-link" href="#">Security Settings</a>

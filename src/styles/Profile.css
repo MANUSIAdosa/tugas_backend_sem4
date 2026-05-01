@@ -451,3 +451,40 @@
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* MILEAGE PROGRESS */
+.mileage-section {
+  background: #1a1a2e;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.mileage-section h3 {
+  color: #fff;
+  margin-bottom: 15px;
+}
+
+.current-tier {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+}
+
+.reward-rate {
+  background: #0d6efd;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.mileage-info {
+  color: #aaa;
+  margin-top: 8px;
+}
+
+.mileage-info small {
+  font-size: 0.8rem;
+}
