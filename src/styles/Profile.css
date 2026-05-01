@@ -24,12 +24,16 @@
 /* HEADER */
 .profile-header {
   display: flex;
+  align-items: flex-start;
   gap: 30px;
   margin-bottom: 40px;
 }
 
 .avatar-wrapper {
   position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
 }
 
 .profile-avatar {
@@ -387,6 +391,9 @@
 /* Avatar upload */
 .avatar-wrapper {
   position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
 }
 
 .avatar-upload {
