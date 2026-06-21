@@ -337,6 +337,16 @@ const Header = () => {
                       Point
                     </Link>
                   </li>
+                  {userData?.isAdmin && (
+                    <li><hr className="dropdown-divider" /></li>
+                  )}
+                  {userData?.isAdmin && (
+                    <li>
+                      <Link className="dropdown-item" to="/admin" style={{ color: '#6366f1', fontWeight: 600 }}>
+                        ◆ Admin Panel
+                      </Link>
+                    </li>
+                  )}
                 </ul>
               </li>
             </ul>
