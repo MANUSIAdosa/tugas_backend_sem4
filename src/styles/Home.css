@@ -835,10 +835,9 @@ html {
       font-size: 0.85rem;
     }
 
-    .home-hero-carousel .carousel-control-prev-icon,
-    .home-hero-carousel .carousel-control-next-icon {
-      width: 36px;
-      height: 36px;
+    .home-hero-carousel .carousel-control-prev,
+    .home-hero-carousel .carousel-control-next {
+      display: none;
     }
 
     .home-trust-strip {

@@ -229,4 +229,65 @@ router.get('/categories', async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/carousel-slides:
+ *   get:
+ *     summary: Get active carousel slides
+ *     tags: [Public]
+ *     responses:
+ *       200:
+ *         description: Array of slides
+ */
+router.get('/carousel-slides', async (req, res) => {
+  try {
+    const slides = await req.prisma.carousel_slides.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' }
+    });
+    const ts = Date.now();
+    const data = slides.map(s => ({
+      id: s.id,
+      title: s.title,
+      subtitle: s.subtitle,
+      cta: s.cta,
+      link: s.link,
+      sortOrder: s.sortOrder,
+      imageUrl: s.image ? `/api/carousel-media/${s.id}?v=${ts}` : null
+    }));
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * Serve carousel slide image
+ */
+router.get('/carousel-media/:id', async (req, res) => {
+  try {
+    const slide = await req.prisma.carousel_slides.findUnique({
+      where: { id: req.params.id },
+      select: { image: true }
+    });
+    if (!slide || !slide.image) {
+      return res.status(404).json({ success: false, message: "Gambar tidak ditemukan" });
+    }
+
+    const buffer = Buffer.isBuffer(slide.image) ? slide.image : Buffer.from(slide.image);
+    const sig = buffer.slice(0, 4).toString('hex');
+    const mime = sig.startsWith('8950') ? 'image/png'
+      : sig.startsWith('ffd8') ? 'image/jpeg'
+      : sig.startsWith('4746') ? 'image/gif'
+      : sig.startsWith('5249') ? 'image/webp'
+      : 'image/png';
+
+    res.set('Content-Type', mime);
+    res.set('Cache-Control', 'no-cache, must-revalidate');
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 export default router;

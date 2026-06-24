@@ -148,6 +148,23 @@ model vouchers {
 }
 
 // ==========================================
+// 7. CAROUSEL SLIDES
+// For dynamic hero carousel content management
+// ==========================================
+model carousel_slides {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  image     Bytes?   // Slide background image
+  title     String   // "Top Up Game Terpercaya"
+  subtitle  String   // "Murah, Cepat, dan Aman..."
+  cta       String   // "Lihat Game"
+  link      String   // "#all-games"
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
 // 6. POINT CONFIGS
 // Tier configuration for dynamic point rewards
 // ==========================================

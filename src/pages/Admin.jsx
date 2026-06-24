@@ -94,6 +94,7 @@ export default function Admin() {
   const [games, setGames] = useState([]);
   const [users, setUsers] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [carouselSlides, setCarouselSlides] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Modal & form state
@@ -119,6 +120,12 @@ export default function Admin() {
   const emptyCatForm = { name: '', slug: '' };
   const [catForm, setCatForm] = useState(emptyCatForm);
   const [catEdit, setCatEdit] = useState(null);
+
+  const emptySlideForm = { title: '', subtitle: '', cta: '', link: '', sortOrder: '0', isActive: 'true' };
+  const [slideForm, setSlideForm] = useState(emptySlideForm);
+  const [slideImage, setSlideImage] = useState(null);
+  const [slideEdit, setSlideEdit] = useState(null);
+  const [slideHasImage, setSlideHasImage] = useState(false);
 
   // Refresh key to bust image cache after updates
   const [refreshKey, setRefreshKey] = useState(0);
@@ -165,7 +172,16 @@ export default function Admin() {
       const res = await fetch('/api/admin/categories', { headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
       if (json.success) setCategories(json.data);
-    } catch {}
+    } catch { /* ignore */ }
+  }, []);
+
+  const loadCarouselSlides = useCallback(async () => {
+    try {
+      const token = getAuthToken();
+      const res = await fetch('/api/admin/carousel-slides', { headers: { Authorization: `Bearer ${token}` } });
+      const json = await res.json();
+      if (json.success) setCarouselSlides(json.data);
+    } catch { /* ignore */ }
   }, []);
 
   const loadItems = useCallback(async (gameId) => {
@@ -183,8 +199,8 @@ export default function Admin() {
   useEffect(() => {
     if (!userData) return;
     setLoading(true);
-    Promise.all([loadGames(), loadUsers(), loadCategories()]).finally(() => setLoading(false));
-  }, [userData, loadGames, loadUsers, loadCategories]);
+    Promise.all([loadGames(), loadUsers(), loadCategories(), loadCarouselSlides()]).finally(() => setLoading(false));
+  }, [userData, loadGames, loadUsers, loadCategories, loadCarouselSlides]);
 
   useEffect(() => {
     if (activeTab === 'items' && selectedGame) loadItems(selectedGame);
@@ -361,6 +377,7 @@ export default function Admin() {
     { key: 'items', label: 'Items', icon: '📦' },
     { key: 'users', label: 'Users', icon: '👥' },
     { key: 'categories', label: 'Categories', icon: '🏷️' },
+    { key: 'carousel', label: 'Carousel', icon: '📺' },
   ];
 
   return (
@@ -598,6 +615,58 @@ export default function Admin() {
                   </div>
                 </section>
               )}
+
+              {activeTab === 'carousel' && (
+                <section>
+                  <div className="admin-section-header">
+                    <p className="admin-section-desc">{carouselSlides.length} slide</p>
+                    <button className="admin-btn admin-btn-primary"
+                      onClick={() => { setSlideForm(emptySlideForm); setSlideImage(null); setSlideEdit(null); setSlideHasImage(false); setModal('addSlide'); }}>
+                      + Tambah Slide
+                    </button>
+                  </div>
+                  <div className="admin-table-wrap">
+                    <table className="admin-table">
+                      <thead>
+                        <tr><th>Urutan</th><th>Judul</th><th>CTA</th><th>Tautan</th><th>Gambar</th><th>Aktif</th><th style={{ width: 160 }}>Aksi</th></tr>
+                      </thead>
+                      <tbody>
+                        {carouselSlides.length === 0 ? (
+                          <tr><td colSpan={7} className="admin-empty">Belum ada slide</td></tr>
+                        ) : carouselSlides.map(s => (
+                          <tr key={s.id}>
+                            <td><span className="admin-badge">{s.sortOrder}</span></td>
+                            <td><span className="admin-game-name">{s.title}</span></td>
+                            <td>{s.cta}</td>
+                            <td><code className="admin-code">{s.link}</code></td>
+                            <td>{s.hasImage ? <span className="admin-badge-badge" data-badge="Hot">Ada</span> : '-'}</td>
+                            <td>{s.isActive ? <span className="admin-category-badge">Aktif</span> : <span style={{ color: '#64748b' }}>Nonaktif</span>}</td>
+                            <td>
+                              <div className="admin-actions">
+                                <button className="admin-btn-sm admin-btn-edit"
+                                  onClick={() => {
+                                    setSlideForm({ title: s.title, subtitle: s.subtitle || '', cta: s.cta, link: s.link, sortOrder: String(s.sortOrder), isActive: String(s.isActive) });
+                                    setSlideImage(null);
+                                    setSlideEdit(s.id);
+                                    setSlideHasImage(s.hasImage);
+                                    setModal('addSlide');
+                                  }}>Edit</button>
+                                <button className="admin-btn-sm admin-btn-delete"
+                                  onClick={async () => {
+                                    if (!confirm(`Hapus slide "${s.title}"?`)) return;
+                                    const token = getAuthToken();
+                                    await fetch(`/api/admin/carousel-slides/${s.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+                                    loadCarouselSlides();
+                                  }}>Hapus</button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              )}
             </>
           )}
         </div>
@@ -785,6 +854,84 @@ export default function Admin() {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
               <button type="button" className="admin-btn admin-btn-secondary" onClick={() => setModal(null)}>Batal</button>
               <button type="submit" className="admin-btn admin-btn-primary">Update</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* === ADD/EDIT SLIDE MODAL === */}
+      {modal === 'addSlide' && (
+        <Modal title={slideEdit ? 'Edit Slide' : 'Tambah Slide'} onClose={() => setModal(null)}>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const token = getAuthToken();
+            const method = slideEdit ? 'PUT' : 'POST';
+            const url = slideEdit ? `/api/admin/carousel-slides/${slideEdit}` : '/api/admin/carousel-slides';
+            const fd = new FormData();
+            fd.append('title', slideForm.title);
+            fd.append('subtitle', slideForm.subtitle);
+            fd.append('cta', slideForm.cta);
+            fd.append('link', slideForm.link);
+            fd.append('sortOrder', slideForm.sortOrder);
+            fd.append('isActive', slideForm.isActive);
+            if (slideImage) fd.append('image', slideImage);
+            if (slideEdit && !slideHasImage && !slideImage) fd.append('removeImage', 'true');
+
+            const headers = { Authorization: `Bearer ${token}` };
+            const res = await fetch(url, { method, headers, body: fd });
+            const json = await res.json();
+            if (json.success) {
+              showToast(json.message);
+              setModal(null);
+              setSlideForm(emptySlideForm);
+              setSlideImage(null);
+              setSlideEdit(null);
+              setSlideHasImage(false);
+              loadCarouselSlides();
+            } else showToast(json.message, 'error');
+          }}>
+            <Input label="Judul" value={slideForm.title}
+              onChange={v => setSlideForm(p => ({ ...p, title: v }))} required placeholder="Top Up Game Terpercaya" />
+            <Input label="Subtitle" value={slideForm.subtitle}
+              onChange={v => setSlideForm(p => ({ ...p, subtitle: v }))} placeholder="Murah, Cepat, dan Aman..." />
+            <Input label="CTA Button" value={slideForm.cta}
+              onChange={v => setSlideForm(p => ({ ...p, cta: v }))} required placeholder="Lihat Game" />
+            <Input label="Tautan (link)" value={slideForm.link}
+              onChange={v => setSlideForm(p => ({ ...p, link: v }))} required placeholder="#all-games" />
+            <Input label="Urutan" type="number" value={slideForm.sortOrder}
+              onChange={v => setSlideForm(p => ({ ...p, sortOrder: v }))} placeholder="0" />
+            <div className="admin-field">
+              <label>Status</label>
+              <select value={slideForm.isActive}
+                onChange={e => setSlideForm(p => ({ ...p, isActive: e.target.value }))}>
+                <option value="true">Aktif</option>
+                <option value="false">Nonaktif</option>
+              </select>
+            </div>
+            <div className="admin-field">
+              <label>Gambar Slide</label>
+              <div className="admin-file-wrap">
+                {slideHasImage && !slideImage && (
+                  <img src={`/api/carousel-media/${slideEdit}`} alt="" className="admin-file-preview"
+                    style={{ maxHeight: 120 }} />
+                )}
+                {slideImage && (
+                  <img src={URL.createObjectURL(slideImage)} alt="" className="admin-file-preview"
+                    style={{ maxHeight: 120 }} />
+                )}
+                <div className="admin-file-inputs">
+                  <input type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                    onChange={e => setSlideImage(e.target.files?.[0] || null)} />
+                  {(slideHasImage || slideImage) && (
+                    <button type="button" className="admin-btn-sm admin-btn-delete"
+                      onClick={() => { setSlideImage(null); setSlideHasImage(false); }}>Hapus</button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+              <button type="button" className="admin-btn admin-btn-secondary" onClick={() => setModal(null)}>Batal</button>
+              <button type="submit" className="admin-btn admin-btn-primary">{slideEdit ? 'Update' : 'Simpan'}</button>
             </div>
           </form>
         </Modal>

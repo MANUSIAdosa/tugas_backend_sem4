@@ -613,4 +613,93 @@ router.delete('/admin/categories/:id', async (req, res) => {
   }
 });
 
+// ==============================
+// CAROUSEL SLIDES CRUD (admin)
+// ==============================
+
+router.get('/admin/carousel-slides', async (req, res) => {
+  try {
+    const slides = await req.prisma.carousel_slides.findMany({
+      orderBy: { sortOrder: 'asc' }
+    });
+    const data = slides.map(s => ({
+      id: s.id,
+      title: s.title,
+      subtitle: s.subtitle,
+      cta: s.cta,
+      link: s.link,
+      sortOrder: s.sortOrder,
+      isActive: s.isActive,
+      hasImage: !!s.image,
+      imageUrl: s.image ? `/api/carousel-media/${s.id}` : null,
+      createdAt: s.createdAt
+    }));
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.post('/admin/carousel-slides', upload.fields([
+  { name: 'image', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { title, subtitle, cta, link, sortOrder, isActive } = req.body;
+    if (!title || !cta || !link) {
+      return res.status(400).json({ success: false, message: "Title, CTA, dan link wajib diisi" });
+    }
+    const slide = await req.prisma.carousel_slides.create({
+      data: {
+        title,
+        subtitle: subtitle || '',
+        cta,
+        link,
+        image: req.files?.image?.[0]?.buffer || undefined,
+        sortOrder: sortOrder ? parseInt(sortOrder) : 0,
+        isActive: isActive !== 'false'
+      }
+    });
+    res.status(201).json({ success: true, message: "Slide berhasil ditambahkan", data: { id: slide.id } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.put('/admin/carousel-slides/:id', upload.fields([
+  { name: 'image', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const slide = await req.prisma.carousel_slides.findUnique({ where: { id: req.params.id } });
+    if (!slide) return res.status(404).json({ success: false, message: "Slide tidak ditemukan" });
+
+    const updateData = {};
+    if (req.body.title !== undefined) updateData.title = req.body.title;
+    if (req.body.subtitle !== undefined) updateData.subtitle = req.body.subtitle;
+    if (req.body.cta !== undefined) updateData.cta = req.body.cta;
+    if (req.body.link !== undefined) updateData.link = req.body.link;
+    if (req.body.sortOrder !== undefined) updateData.sortOrder = parseInt(req.body.sortOrder);
+    if (req.body.isActive !== undefined) updateData.isActive = req.body.isActive !== 'false';
+    if (req.files?.image?.[0]?.buffer) updateData.image = req.files.image[0].buffer;
+    if (req.body.removeImage === 'true') updateData.image = null;
+
+    await req.prisma.carousel_slides.update({
+      where: { id: req.params.id },
+      data: updateData
+    });
+
+    res.json({ success: true, message: "Slide berhasil diupdate" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.delete('/admin/carousel-slides/:id', async (req, res) => {
+  try {
+    await req.prisma.carousel_slides.delete({ where: { id: req.params.id } });
+    res.json({ success: true, message: "Slide berhasil dihapus" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 export default router;

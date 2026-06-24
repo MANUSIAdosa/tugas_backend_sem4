@@ -3,9 +3,26 @@ import { Link } from 'react-router-dom';
 import '../styles/Home.css';
 import '../styles/Animations.css';
 
+/* ── simple in-memory fetch cache (5 min TTL) ─── */
+const cache = {};
+const CACHE_TTL = 5 * 60 * 1000;
+
+const cachedFetch = async (url) => {
+  const now = Date.now();
+  const entry = cache[url];
+  if (entry && now - entry.timestamp < CACHE_TTL) {
+    return entry.data;
+  }
+  const res = await fetch(url);
+  const data = await res.json();
+  cache[url] = { data, timestamp: now };
+  return data;
+};
+
 const Home = () => {
   const [games, setGames] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [slides, setSlides] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,13 +32,11 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [gamesRes, categoriesRes] = await Promise.all([
-          fetch('/api/games'),
-          fetch('/api/categories'),
+        const [gamesJson, categoriesJson, slidesJson] = await Promise.all([
+          cachedFetch('/api/games'),
+          cachedFetch('/api/categories'),
+          cachedFetch('/api/carousel-slides'),
         ]);
-
-        const gamesJson = await gamesRes.json();
-        const categoriesJson = await categoriesRes.json();
 
         if (gamesJson.success) {
           setGames(gamesJson.data);
@@ -31,6 +46,10 @@ const Home = () => {
 
         if (categoriesJson.success && Array.isArray(categoriesJson.data)) {
           setCategories(categoriesJson.data);
+        }
+
+        if (slidesJson.success && Array.isArray(slidesJson.data)) {
+          setSlides(slidesJson.data);
         }
       } catch (err) {
         setError(err.message);
@@ -60,7 +79,7 @@ const Home = () => {
       ? games
       : games.filter(g => g.category && g.category.slug === activeCategory);
 
-  /* ── shared render helpers ────────────────── */
+  /* ── render helpers ────────────────────────── */
   const renderGameCard = (game, extraClass = '') => (
     <Link
       key={game.id}
@@ -102,31 +121,6 @@ const Home = () => {
     </Link>
   );
 
-  /* ── carousel slides ──────────────────────── */
-  const heroSlides = [
-    {
-      title: 'Top Up Game Terpercaya',
-      subtitle:
-        'Murah, Cepat, dan Aman. Harga termurah untuk ribuan game favoritmu.',
-      cta: 'Lihat Game',
-      href: '#all-games',
-    },
-    {
-      title: 'Harga Termurah & Promo',
-      subtitle:
-        'Dapatkan harga spesial setiap hari. Cashback 1% untuk setiap transaksi!',
-      cta: 'Trending Sekarang',
-      href: '#trending',
-    },
-    {
-      title: 'Instant Delivery 24/7',
-      subtitle:
-        'Pemesanan diproses otomatis dan dikirim dalam hitungan detik. Kapanpun, di manapun.',
-      cta: 'Kenapa RAST-7?',
-      href: '#why-rast7',
-    },
-  ];
-
   /* ── why-rast-7 items ─────────────────────── */
   const whyItems = [
     {
@@ -161,44 +155,49 @@ const Home = () => {
               className="carousel slide"
               ref={carouselRef}
             >
-              {/* indicators */}
-              <div className="carousel-indicators">
-                {heroSlides.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    data-bs-target="#homeHeroCarousel"
-                    data-bs-slide-to={i}
-                    className={i === 0 ? 'active' : ''}
-                    aria-current={i === 0 ? 'true' : undefined}
-                    aria-label={`Slide ${i + 1}`}
-                  />
-                ))}
-              </div>
-
-              {/* slides */}
-              <div className="carousel-inner">
-                {heroSlides.map((slide, i) => (
-                  <div
-                    key={i}
-                    className={`carousel-item${i === 0 ? ' active' : ''}`}
-                  >
-                    <div
-                      className="home-hero-slide"
-                      style={{ backgroundImage: 'url(/asset/banner.png)' }}
-                    >
-                      <div className="home-hero-overlay" />
-                      <div className="home-hero-content">
-                        <h1 className="home-hero-title">{slide.title}</h1>
-                        <p className="home-hero-subtitle">{slide.subtitle}</p>
-                        <a href={slide.href} className="home-hero-cta">
-                          {slide.cta}
-                        </a>
-                      </div>
+              {(() => {
+                const items = slides.length > 0 ? slides : [{
+                  title: 'Top Up Game Terpercaya',
+                  subtitle: 'Murah, Cepat, dan Aman. Harga termurah untuk ribuan game favoritmu.',
+                  cta: 'Lihat Game',
+                  link: '#all-games',
+                  imageUrl: null
+                }];
+                return (
+                  <>
+                    {/* indicators */}
+                    <div className="carousel-indicators">
+                      {items.map((_, i) => (
+                        <button key={i} type="button"
+                          data-bs-target="#homeHeroCarousel"
+                          data-bs-slide-to={i}
+                          className={i === 0 ? 'active' : ''}
+                          aria-current={i === 0 ? 'true' : undefined}
+                          aria-label={`Slide ${i + 1}`}
+                        />
+                      ))}
                     </div>
-                  </div>
-                ))}
-              </div>
+
+                    {/* slides */}
+                    <div className="carousel-inner">
+                      {items.map((slide, i) => (
+                        <div key={i} className={`carousel-item${i === 0 ? ' active' : ''}`}>
+                          <div className="home-hero-slide"
+                            style={{ backgroundImage: slide.imageUrl ? `url(${slide.imageUrl})` : undefined }}
+                          >
+                            <div className="home-hero-overlay" />
+                            <div className="home-hero-content">
+                              <h1 className="home-hero-title">{slide.title}</h1>
+                              <p className="home-hero-subtitle">{slide.subtitle}</p>
+                              <a href={slide.link} className="home-hero-cta">{slide.cta}</a>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
 
               {/* controls */}
               <button
