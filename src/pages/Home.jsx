@@ -350,7 +350,7 @@ const Home = () => {
                   muted
                   loop
                   playsInline
-                  poster="/asset/banner.png"
+                  poster="/asset/banner-default.png"
                 >
                   <source
                     src="/asset/MLBB 9th Anniversary _ Global Player-Created Film _Your Day_ _ Mobile Legends_ Bang Bang.mp4"
