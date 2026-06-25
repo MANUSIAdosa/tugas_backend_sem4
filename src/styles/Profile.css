@@ -451,6 +451,102 @@
   text-align: center;
 }
 
+/* Tier Logo & Header Layout */
+.tier-header-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .tier-header-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .current-tier {
+    justify-content: center !important;
+  }
+}
+
+.tier-badge-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.5s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Tier Specific Glow Effects */
+.tier-badge-container.tier-bronze {
+  border-color: rgba(205, 127, 50, 0.3);
+  box-shadow: 0 0 20px rgba(205, 127, 50, 0.15);
+  background: radial-gradient(circle, rgba(205, 127, 50, 0.08) 0%, transparent 70%);
+}
+
+.tier-badge-container.tier-silver {
+  border-color: rgba(192, 192, 192, 0.3);
+  box-shadow: 0 0 20px rgba(192, 192, 192, 0.15);
+  background: radial-gradient(circle, rgba(192, 192, 192, 0.08) 0%, transparent 70%);
+}
+
+.tier-badge-container.tier-gold {
+  border-color: rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.2);
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+}
+
+.tier-badge-container.tier-platinum {
+  border-color: rgba(0, 242, 255, 0.3);
+  box-shadow: 0 0 30px rgba(0, 242, 255, 0.25);
+  background: radial-gradient(circle, rgba(0, 242, 255, 0.12) 0%, transparent 70%);
+}
+
+.tier-badge-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  transition: transform 0.3s ease;
+}
+
+.tier-badge-container:hover .tier-badge-image {
+  transform: scale(1.1) rotate(3deg);
+}
+
+.tier-details-container {
+  flex-grow: 1;
+  width: 100%;
+}
+
+/* Tier Specific Progress Bars */
+.progress-bar-bronze {
+  background: linear-gradient(90deg, #b06622, #cd7f32) !important;
+  color: #fff !important;
+}
+
+.progress-bar-silver {
+  background: linear-gradient(90deg, #8a8a8a, #c0c0c0) !important;
+  color: #0a0a1e !important;
+}
+
+.progress-bar-gold {
+  background: linear-gradient(90deg, #d4af37, #ffd700) !important;
+  color: #0a0a1e !important;
+}
+
+.progress-bar-platinum {
+  background: linear-gradient(90deg, #00c3ff, #00f2ff) !important;
+  color: #0a0a1e !important;
+}
+
 /* ─── Account Settings Section ─── */
 .account-settings {
   margin-top: 10px;
