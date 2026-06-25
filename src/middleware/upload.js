@@ -1,6 +1,24 @@
 import multer from 'multer';
 
 /**
+ * Shared multer instance for image uploads.
+ * 10 MB limit, accepts only common image MIME types.
+ */
+const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+
+export const imageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Hanya file gambar yang diperbolehkan (jpeg, png, gif, webp)'));
+    }
+  }
+});
+
+/**
  * Multer error handler middleware
  * Catches multer-specific errors (file size, file type, etc.)
  */

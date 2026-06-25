@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.js';
+import { sendImageResponse } from '../utils/imageUtils.js';
 
 const router = express.Router();
 
@@ -33,13 +35,15 @@ router.get('/test', (req, res) => res.json({ ok: true }));
 router.get('/games', async (req, res) => {
   try {
     const games = await req.prisma.games.findMany({
-      select: { id: true, name: true, slug: true, hasZone: true, bgPosition: true, updatedAt: true, logo: true, bg: true }
+      select: { id: true, name: true, slug: true, badge: true, categoryId: true, hasZone: true, bgPosition: true, updatedAt: true, logo: true, bg: true, category: { select: { id: true, name: true, slug: true } } }
     });
     const ts = Date.now();
     const data = games.map(g => ({
       id: g.id,
       name: g.name,
       slug: g.slug,
+      badge: g.badge,
+      category: g.category,
       hasZone: g.hasZone,
       bgPosition: g.bgPosition,
       updatedAt: g.updatedAt,
@@ -72,7 +76,7 @@ router.get('/games', async (req, res) => {
 router.get('/games/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
-    const game = await req.prisma.games.findUnique({ where: { slug } });
+    const game = await req.prisma.games.findUnique({ where: { slug }, include: { category: true } });
 
     if (!game) {
       return res.status(404).json({ success: false, message: "Game tidak ditemukan" });
@@ -82,6 +86,8 @@ router.get('/games/:slug', async (req, res) => {
       id: game.id,
       name: game.name,
       slug: game.slug,
+      badge: game.badge,
+      category: game.category,
       logoUrl: game.logo ? `/api/game-media/${game.id}/logo?v=${game.updatedAt?.getTime() || Date.now()}` : null,
       itemIconUrl: game.itemIcon ? `/api/game-media/${game.id}/icon?v=${game.updatedAt?.getTime() || Date.now()}` : null,
       bgUrl: game.bg ? `/api/game-media/${game.id}/bg?v=${game.updatedAt?.getTime() || Date.now()}` : null,
@@ -142,25 +148,7 @@ router.get('/game-media/:id/:type', async (req, res) => {
       return res.status(404).json({ success: false, message: "Media tidak ditemukan" });
     }
 
-    const mimeMap = {
-      png: 'image/png',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      gif: 'image/gif',
-      webp: 'image/webp'
-    };
-
-    const buffer = Buffer.isBuffer(game[field]) ? game[field] : Buffer.from(game[field]);
-    const sig = buffer.slice(0, 4).toString('hex');
-    const mime = sig.startsWith('8950') ? 'image/png'
-      : sig.startsWith('ffd8') ? 'image/jpeg'
-      : sig.startsWith('4746') ? 'image/gif'
-      : sig.startsWith('5249') ? 'image/webp'
-      : 'image/png';
-
-    res.set('Content-Type', mime);
-    res.set('Cache-Control', 'no-cache, must-revalidate');
-    res.send(buffer);
+    sendImageResponse(res, game[field]);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -201,6 +189,302 @@ router.get('/leaderboard', async (req, res) => {
     res.json({ success: true, data });
   } catch (err) {
     req.transactionService.handleError(res, err, "Gagal mengambil leaderboard");
+  }
+});
+
+/**
+ * @openapi
+ * /api/categories:
+ *   get:
+ *     summary: Get all game categories
+ *     tags: [Public]
+ *     responses:
+ *       200:
+ *         description: List of categories
+ */
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await req.prisma.categories.findMany({
+      orderBy: { name: 'asc' }
+    });
+    res.json({ success: true, data: categories });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * @openapi
+ * /api/carousel-slides:
+ *   get:
+ *     summary: Get active carousel slides
+ *     tags: [Public]
+ *     responses:
+ *       200:
+ *         description: Array of slides
+ */
+router.get('/carousel-slides', async (req, res) => {
+  try {
+    const slides = await req.prisma.carousel_slides.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' }
+    });
+    const ts = Date.now();
+    const data = slides.map(s => ({
+      id: s.id,
+      title: s.title,
+      subtitle: s.subtitle,
+      cta: s.cta,
+      link: s.link,
+      sortOrder: s.sortOrder,
+      imageUrl: s.image ? `/api/carousel-media/${s.id}?v=${ts}` : null
+    }));
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * Serve carousel slide image
+ */
+router.get('/carousel-media/:id', async (req, res) => {
+  try {
+    const slide = await req.prisma.carousel_slides.findUnique({
+      where: { id: req.params.id },
+      select: { image: true }
+    });
+    if (!slide || !slide.image) {
+      return res.status(404).json({ success: false, message: "Gambar tidak ditemukan" });
+    }
+
+    sendImageResponse(res, slide.image);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * Serve page promo banner image
+ */
+router.get('/promo-media/banner/:id', async (req, res) => {
+  try {
+    const banner = await req.prisma.promo_banners.findUnique({
+      where: { id: req.params.id },
+      select: { image: true }
+    });
+    if (!banner || !banner.image) {
+      return res.status(404).json({ success: false, message: "Gambar banner tidak ditemukan" });
+    }
+
+    sendImageResponse(res, banner.image);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * @openapi
+ * /api/promo-page:
+ *   get:
+ *     summary: Get page banner config
+ *     tags: [Public]
+ *     responses:
+ *       200:
+ *         description: Active banner config
+ */
+router.get('/promo-page', async (req, res) => {
+  try {
+    const banner = await req.prisma.promo_banners.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    if (!banner) {
+      return res.json({ success: true, data: null });
+    }
+    const ts = Date.now();
+    const data = {
+      id: banner.id,
+      title: banner.title,
+      periodText: banner.periodText,
+      regionText: banner.regionText,
+      categoryText: banner.categoryText,
+      subheading: banner.subheading,
+      isActive: banner.isActive,
+      imageUrl: banner.image ? `/api/promo-media/banner/${banner.id}?v=${ts}` : null
+    };
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * @openapi
+ * /api/promos:
+ *   get:
+ *     summary: Get all active promotions
+ *     tags: [Public]
+ *     responses:
+ *       200:
+ *         description: List of active promotions
+ */
+router.get('/promos', async (req, res) => {
+  try {
+    const promos = await req.prisma.promos.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'asc' }
+    });
+    const data = promos.map(p => ({
+      id: p.id,
+      category: p.category,
+      gameName: p.gameName,
+      periodText: p.periodText,
+      timeText: p.timeText,
+      cashbackText: p.cashbackText,
+      notes: p.notes,
+      isActive: p.isActive
+    }));
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * @openapi
+ * /api/contact:
+ *   post:
+ *     summary: Submit a contact message/complaint
+ *     tags: [Public]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [pesan]
+ *             properties:
+ *               nama: { type: string }
+ *               pesan: { type: string }
+ *     responses:
+ *       201:
+ *         description: Message successfully submitted
+ *       401:
+ *         description: Unauthorized
+ *       429:
+ *         description: Too many requests
+ */
+router.post('/contact', authenticate, async (req, res) => {
+  try {
+    const { pesan } = req.body;
+    if (!pesan) {
+      return res.status(400).json({ success: false, message: "Field pesan wajib diisi" });
+    }
+
+    // Retrieve the authenticated user's details from database to verify existence
+    const user = await req.prisma.users.findUnique({
+      where: { id: req.user.userId }
+    });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User tidak ditemukan" });
+    }
+
+    // UserId-based Rate Limiting (max 3 messages per 24 hours per user account)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const messageCount = await req.prisma.contact_messages.count({
+      where: {
+        userId: req.user.userId,
+        createdAt: { gte: oneDayAgo }
+      }
+    });
+
+    if (messageCount >= 3) {
+      return res.status(429).json({
+        success: false,
+        message: "Batas pengiriman pesan harian telah tercapai. Maksimal 3 pesan per hari."
+      });
+    }
+
+    await req.prisma.contact_messages.create({
+      data: {
+        userId: req.user.userId,
+        message: pesan
+      }
+    });
+
+    res.status(201).json({ success: true, message: "Pesan Anda berhasil dikirim. Terima kasih!" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * @openapi
+ * /api/vouchers/active:
+ *   get:
+ *     summary: Get active vouchers with available quota
+ *     tags: [Public]
+ *     responses:
+ *       200:
+ *         description: List of active vouchers
+ */
+router.get('/vouchers/active', async (req, res) => {
+  try {
+    const vouchers = await req.prisma.vouchers.findMany({
+      where: { isActive: true },
+      select: {
+        code: true,
+        rewardValue: true,
+        rewardType: true,
+        usedCount: true,
+        quota: true,
+        validUntil: true
+      }
+    });
+
+    // Filter: only vouchers with remaining quota and not expired
+    const now = new Date();
+    const available = vouchers.filter(v =>
+      v.usedCount < v.quota &&
+      (!v.validUntil || new Date(v.validUntil) > now)
+    );
+
+    res.json({ success: true, data: available });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * @openapi
+ * /api/avatar/{userId}:
+ *   get:
+ *     summary: Get user avatar (public)
+ *     tags: [Public]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Avatar image }
+ *       404: { description: Default avatar served if none exists }
+ */
+router.get('/avatar/:userId', async (req, res) => {
+  try {
+    const user = await req.userService.getAvatar(req.params.userId);
+
+    if (!user || !user.avatar) {
+      return res.sendFile('asset/profile.png', { root: '.' });
+    }
+
+    sendImageResponse(res, user.avatar);
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Gagal mengambil avatar" });
   }
 });
 

@@ -22,12 +22,10 @@ app.use(requestLogger);
 // Swagger API Documentation
 app.use('/api-docs', swaggerUiMiddleware, swaggerUiSetup);
 
-app.get('/api/test', (req, res) => res.json({ ok: true }));
-
 // Initialize service classes
 const userService = new UserService(prisma);
-const transactionService = new TransactionService(prisma);
 const pointConfigService = new PointConfigService(prisma);
+const transactionService = new TransactionService(prisma, pointConfigService);
 
 app.use(express.json());
 

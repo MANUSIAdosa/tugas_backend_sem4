@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../utils/api.js';
 import '../styles/Profile.css';
-import '../styles/Animations.css';
+
+const getTierLogo = (tierName) => {
+  const name = tierName?.toLowerCase();
+  if (name === 'platinum') return '/asset/logo_rank/paltinum.png';
+  if (name === 'gold') return '/asset/logo_rank/gold.png';
+  if (name === 'silver') return '/asset/logo_rank/silver.png';
+  return '/asset/logo_rank/bronze.png';
+};
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
@@ -13,7 +20,7 @@ const Profile = () => {
     birthday: false,
     gender: false
   });
-  
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -22,7 +29,7 @@ const Profile = () => {
     birthday: '',
     gender: ''
   });
-  
+
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +60,7 @@ const Profile = () => {
 
         // Prioritize currentUser, fallback to userData
         const user = currentUser ? JSON.parse(currentUser) :
-                    storedUser ? JSON.parse(storedUser) : null;
+          storedUser ? JSON.parse(storedUser) : null;
 
         if (user) {
           setUserData(user);
@@ -108,7 +115,7 @@ const Profile = () => {
       ...prev,
       [field]: !prev[field]
     }));
-    
+
     // Reset errors dan success message
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -143,8 +150,8 @@ const Profile = () => {
   // Validate field
   const validateField = (field, value) => {
     const newErrors = { ...errors };
-    
-    switch(field) {
+
+    switch (field) {
       case 'username':
         if (!value.trim()) {
           newErrors.username = 'Username tidak boleh kosong';
@@ -156,7 +163,7 @@ const Profile = () => {
           delete newErrors.username;
         }
         break;
-        
+
       case 'email':
         if (!value.trim()) {
           newErrors.email = 'Email tidak boleh kosong';
@@ -166,7 +173,7 @@ const Profile = () => {
           delete newErrors.email;
         }
         break;
-        
+
       case 'password':
         if (value && value.length < 6) {
           newErrors.password = 'Password minimal 6 karakter';
@@ -174,7 +181,7 @@ const Profile = () => {
           delete newErrors.password;
         }
         break;
-        
+
       case 'confirmPassword':
         if (formData.password && value !== formData.password) {
           newErrors.confirmPassword = 'Password tidak cocok';
@@ -182,7 +189,7 @@ const Profile = () => {
           delete newErrors.confirmPassword;
         }
         break;
-        
+
       case 'birthday':
         if (value && !/^\d{2}-[A-Za-z]{3}-\d{4}$/.test(value)) {
           newErrors.birthday = 'Format: DD-MMM-YYYY (contoh: 01-Jan-2000)';
@@ -190,11 +197,11 @@ const Profile = () => {
           delete newErrors.birthday;
         }
         break;
-        
+
       default:
         break;
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -219,7 +226,7 @@ const Profile = () => {
     try {
       let updatedData = {};
 
-      switch(field) {
+      switch (field) {
         case 'username':
           updatedData = { username: value };
           break;
@@ -345,15 +352,15 @@ const Profile = () => {
 
       // === BAGIAN YANG DIPERBAIKI ===
       // Arahkan ke endpoint gambar yang ada di index.js
-      const newAvatarUrl = `/api/avatar/${userData.id}`; 
-      
-      const updatedUser = { 
-        ...userData, 
-        avatar: newAvatarUrl 
+      const newAvatarUrl = `/api/avatar/${userData.id}`;
+
+      const updatedUser = {
+        ...userData,
+        avatar: newAvatarUrl
       };
 
       // 1. Update state agar re-render
-      setUserData(updatedUser); 
+      setUserData(updatedUser);
 
       // 2. Simpan ke sessionStorage agar tidak hilang saat di-refresh
       sessionStorage.setItem('userData', JSON.stringify(updatedUser));
@@ -433,13 +440,13 @@ const Profile = () => {
     sessionStorage.removeItem('currentUser');
     sessionStorage.removeItem('userData');
     sessionStorage.removeItem('loginTime');
-    
+
     // Reset state userData ke null
     setUserData(null);
 
     // Kirim custom event untuk memberi tahu komponen lain
     window.dispatchEvent(new Event('userLoggedOut'));
-    
+
     // Reset form data
     setFormData({
       username: '',
@@ -449,7 +456,7 @@ const Profile = () => {
       birthday: '',
       gender: 'Female'
     });
-    
+
     // Navigate ke home
     navigate('/');
   };
@@ -484,26 +491,10 @@ const Profile = () => {
 
   return (
     <>
-      {/* Background Animation */}
-      <div className="anim-logo-fall-container">
-        <img src="/asset/logo_game/coc.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/mlbb.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/valorant.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/roblox.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/coc.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/mlbb.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/valorant.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/roblox.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/coc.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/mlbb.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/valorant.png" alt="logo" className="anim-falling-logo" />
-        <img src="/asset/logo_game/roblox.png" alt="logo" className="anim-falling-logo" />
-      </div>
-
       {/* PROFILE */}
       <main className="profile-main">
         <section className="profile-container">
-          
+
           {/* Success Message */}
           {successMessage && (
             <div className="alert alert-success" role="alert">
@@ -516,8 +507,8 @@ const Profile = () => {
             <div className="avatar-wrapper">
               <img
                 src={userData.avatar
-      ? `${userData.avatar}?t=${Date.now()}`   // tambahkan query string agar cache bust
-      : "/asset/profile.png"}
+                  ? `${userData.avatar}?t=${Date.now()}`   // tambahkan query string agar cache bust
+                  : "/asset/profile.png"}
                 alt="Profile"
                 className="profile-avatar"
               />
@@ -542,9 +533,9 @@ const Profile = () => {
               <h1 className="profile-name">
                 {userData.username || "GUEST"}
                 <span className="edit-icon">
-                  <img 
-                    src="/asset/pencil-circle.svg" 
-                    alt="edit" 
+                  <img
+                    src="/asset/pencil-circle.svg"
+                    alt="edit"
                     onClick={() => toggleEditMode('username')}
                     style={{ cursor: 'pointer' }}
                   />
@@ -570,14 +561,14 @@ const Profile = () => {
                     )}
                     {editMode.birthday ? (
                       <>
-                        <button 
+                        <button
                           onClick={() => handleSave('birthday')}
                           disabled={isLoading}
                           className="inline-save-btn"
                         >
                           {isLoading ? '...' : 'Save'}
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleCancel('birthday')}
                           className="inline-cancel-btn"
                         >
@@ -585,9 +576,9 @@ const Profile = () => {
                         </button>
                       </>
                     ) : (
-                      <img 
-                        src="/asset/pencil-circle.svg" 
-                        alt="edit" 
+                      <img
+                        src="/asset/pencil-circle.svg"
+                        alt="edit"
                         onClick={() => toggleEditMode('birthday')}
                         className="inline-edit-icon"
                       />
@@ -614,14 +605,14 @@ const Profile = () => {
                     )}
                     {editMode.gender ? (
                       <>
-                        <button 
+                        <button
                           onClick={() => handleSave('gender')}
                           disabled={isLoading}
                           className="inline-save-btn"
                         >
                           {isLoading ? '...' : 'Save'}
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleCancel('gender')}
                           className="inline-cancel-btn"
                         >
@@ -629,9 +620,9 @@ const Profile = () => {
                         </button>
                       </>
                     ) : (
-                      <img 
-                        src="/asset/pencil-circle.svg" 
-                        alt="edit" 
+                      <img
+                        src="/asset/pencil-circle.svg"
+                        alt="edit"
                         onClick={() => toggleEditMode('gender')}
                         className="inline-edit-icon"
                       />
@@ -643,39 +634,49 @@ const Profile = () => {
               {/* MILeAGE PROGRESS */}
               {mileage && (
                 <section className="mileage-section mt-4">
-                  <h3>Progress Tier</h3>
-                  <div className="current-tier mb-2">
-                    <strong>Tier Saat Ini: {mileage.currentTier.tierName.toUpperCase()} (Level {mileage.currentTier.levelNumber})</strong>
-                    <span className="reward-rate">Reward Rate: {(mileage.currentTier.rewardRate * 100).toFixed(1)}%</span>
-                  </div>
-
-                  {mileage.nextTier ? (
-                    <>
-                      <div className="progress mb-2" style={{ height: '25px' }}>
-                        <div
-                          className="progress-bar progress-bar-striped progress-bar-animated"
-                          role="progressbar"
-                          style={{ width: `${mileage.progress}%` }}
-                          aria-valuenow={mileage.progress}
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                        >
-                          {mileage.progress > 5 ? `${mileage.progress}%` : ''}
-                        </div>
-                      </div>
-                      <div className="mileage-info">
-                        <small>
-                          Total pengeluaran: Rp {mileage.totalSpent.toLocaleString('id-ID')} |
-                          Kurang: Rp {mileage.amountNeeded.toLocaleString('id-ID')} lagi untuk mencapai tier {mileage.nextTier.tierName.toUpperCase()}
-                          (Reward: {(mileage.nextTier.rewardRate * 100).toFixed(1)}%)
-                        </small>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="alert alert-success">
-                      <strong>SELAMAT! Anda telah mencapai tier maksimal (PLATINUM)</strong>
+                  <div className="tier-header-container">
+                    <div className={`tier-badge-container tier-${mileage.currentTier.tierName.toLowerCase()}`}>
+                      <img
+                        src={getTierLogo(mileage.currentTier.tierName)}
+                        alt={`${mileage.currentTier.tierName} logo`}
+                        className="tier-badge-image"
+                      />
                     </div>
-                  )}
+                    <div className="tier-details-container">
+                      <div className="current-tier mb-2">
+                        <strong>Tier Saat Ini: {mileage.currentTier.tierName.toUpperCase()} (Level {mileage.currentTier.levelNumber})</strong>
+                        <span className="reward-rate">Reward Rate: {(mileage.currentTier.rewardRate * 100).toFixed(1)}%</span>
+                      </div>
+
+                      {mileage.nextTier ? (
+                        <>
+                          <div className="progress mb-2" style={{ height: '25px' }}>
+                            <div
+                              className={`progress-bar progress-bar-${mileage.currentTier.tierName.toLowerCase()}`}
+                              role="progressbar"
+                              style={{ width: `${mileage.progress}%` }}
+                              aria-valuenow={mileage.progress}
+                              aria-valuemin="0"
+                              aria-valuemax="100"
+                            >
+                              {mileage.progress > 5 ? `${mileage.progress}%` : ''}
+                            </div>
+                          </div>
+                          <div className="mileage-info">
+                            <small>
+                              Total pengeluaran: Rp {mileage.totalSpent.toLocaleString('id-ID')} |
+                              Kurang: Rp {mileage.amountNeeded.toLocaleString('id-ID')} lagi untuk mencapai tier {mileage.nextTier.tierName.toUpperCase()}
+                              (Reward: {(mileage.nextTier.rewardRate * 100).toFixed(1)}%)
+                            </small>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="alert alert-success">
+                          <strong>SELAMAT! Anda telah mencapai PEAK TIER (PLATINUM)</strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </section>
               )}
 
@@ -683,14 +684,6 @@ const Profile = () => {
                 <button
                   className="logout-btn"
                   onClick={handleLogout}
-                  style={{
-                    background: 'transparent',
-                    border: '1px solid #ff5555',
-                    color: '#ff5555',
-                    padding: '5px 15px',
-                    borderRadius: '6px',
-                    cursor: 'pointer'
-                  }}
                 >
                   Logout
                 </button>
@@ -707,8 +700,8 @@ const Profile = () => {
               <label>Username</label>
               {editMode.username ? (
                 <div className="edit-mode-container">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     name="username"
                     value={formData.username}
                     onChange={handleInputChange}
@@ -716,13 +709,13 @@ const Profile = () => {
                   />
                   {errors.username && <span className="error-message">{errors.username}</span>}
                   <div className="edit-buttons">
-                    <button 
+                    <button
                       onClick={() => handleSave('username')}
                       disabled={isLoading}
                     >
                       {isLoading ? 'Saving...' : 'Save'}
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleCancel('username')}
                       className="cancel-btn"
                     >
@@ -732,10 +725,10 @@ const Profile = () => {
                 </div>
               ) : (
                 <>
-                  <input 
-                    type="text" 
-                    value={userData.username || "user_name_123"} 
-                    readOnly 
+                  <input
+                    type="text"
+                    value={userData.username || "user_name_123"}
+                    readOnly
                   />
                   <button onClick={() => toggleEditMode('username')}>Edit</button>
                 </>
@@ -747,8 +740,8 @@ const Profile = () => {
               <label>Email</label>
               {editMode.email ? (
                 <div className="edit-mode-container">
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
@@ -756,13 +749,13 @@ const Profile = () => {
                   />
                   {errors.email && <span className="error-message">{errors.email}</span>}
                   <div className="edit-buttons">
-                    <button 
+                    <button
                       onClick={() => handleSave('email')}
                       disabled={isLoading}
                     >
                       {isLoading ? 'Saving...' : 'Save'}
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleCancel('email')}
                       className="cancel-btn"
                     >
@@ -772,10 +765,10 @@ const Profile = () => {
                 </div>
               ) : (
                 <>
-                  <input 
-                    type="email" 
-                    value={userData.email || "user@example.com"} 
-                    readOnly 
+                  <input
+                    type="email"
+                    value={userData.email || "user@example.com"}
+                    readOnly
                   />
                   <button onClick={() => toggleEditMode('email')}>Edit</button>
                 </>
@@ -787,16 +780,16 @@ const Profile = () => {
               <label>Password</label>
               {editMode.password ? (
                 <div className="edit-mode-container">
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="New password"
                     className={errors.password ? 'error' : ''}
                   />
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
@@ -809,13 +802,13 @@ const Profile = () => {
                     </span>
                   )}
                   <div className="edit-buttons">
-                    <button 
+                    <button
                       onClick={() => handleSave('password')}
                       disabled={isLoading}
                     >
                       {isLoading ? 'Saving...' : 'Save'}
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleCancel('password')}
                       className="cancel-btn"
                     >
@@ -833,7 +826,7 @@ const Profile = () => {
 
             {/* Delete Account */}
             <div className="setting-item danger">
-              <button 
+              <button
                 className="delete-btn"
                 onClick={handleDeleteAccount}
                 disabled={isLoading}

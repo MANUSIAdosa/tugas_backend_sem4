@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useState, useEffect } from 'react';
+import { getAuthToken } from '../utils/api.js';
 
 export const PointContext = createContext();
 
@@ -9,7 +10,11 @@ export const PointProvider = ({ children }) => {
   // Fungsi khusus untuk menarik data dari Database
   const fetchPointsFromDB = async (userId) => {
     try {
-      const response = await fetch(`/api/points/${userId}`);
+      const token = getAuthToken();
+      if (!token) return;
+      const response = await fetch(`/api/points/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const result = await response.json();
       
       if (result.success) {

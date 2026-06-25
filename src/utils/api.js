@@ -85,18 +85,55 @@ export const api = {
   delete: (endpoint) => authFetch(endpoint, { method: 'DELETE' }),
 
   // For multipart/form-data (file uploads)
-  postForm: (endpoint, formData) => {
+  // NOTE: This does NOT use authFetch because authFetch always sets
+  // Content-Type: application/json, which breaks FormData uploads.
+  // The browser must set Content-Type: multipart/form-data with boundary automatically.
+  postForm: async (endpoint, formData) => {
     const token = getAuthToken();
     const headers = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-    // Don't set Content-Type for FormData - browser sets it with boundary
-    return authFetch(endpoint, {
+    // Don't set Content-Type - browser sets it with correct boundary for FormData
+    const response = await fetch(`${API_BASE}${endpoint}`, {
       method: 'POST',
       headers,
       body: formData
     });
+
+    // Handle 401 - token expired or invalid
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+
+    return response;
+  },
+
+  /**
+   * Generic form-data fetch that supports any HTTP method and returns parsed JSON.
+   * Used by admin components for multipart uploads (POST/PUT).
+   * @param {string} endpoint - API endpoint
+   * @param {string} method - HTTP method (POST, PUT, etc.)
+   * @param {FormData} formData - FormData object
+   * @returns {Promise<Object>} Parsed JSON response
+   */
+  formFetch: async (endpoint, method, formData) => {
+    const token = getAuthToken();
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      method,
+      headers,
+      body: formData
+    });
+
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+
+    return response.json();
   }
 };
 

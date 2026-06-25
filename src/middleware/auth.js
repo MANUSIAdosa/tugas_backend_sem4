@@ -27,18 +27,6 @@ export const authenticate = (req, res, next) => {
     req.user = decoded; // { userId, username, isAdmin }
     next();
   } catch (err) {
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token tidak valid atau telah berakhir, silakan login kembali'
-      });
-    }
-    if (err.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token tidak valid atau telah berakhir, silakan login kembali'
-      });
-    }
     return res.status(401).json({
       success: false,
       message: 'Token tidak valid atau telah berakhir, silakan login kembali'

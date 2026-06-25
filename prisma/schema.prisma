@@ -26,6 +26,9 @@ model users {
 
   // Relasi: Satu user bisa memiliki banyak riwayat transaksi
   transactions transactions[]
+
+  // Relasi ke contact_messages
+  contact_messages contact_messages[]
 }
 
 
@@ -42,6 +45,9 @@ model games {
 
   bg                 Bytes?    // Background image binary
   bgPosition         String?   // "50% calc(50% - 300px)"
+  badge              String?   // "Hot", "New", "Promo", or null
+  categoryId         String?   @db.ObjectId
+  category           categories? @relation(fields: [categoryId], references: [id])
   hasZone            Boolean   @default(true)
   userIdLabel        String    @default("USER ID")
   userIdPlaceholder  String    @default("Masukkan User ID")
@@ -67,7 +73,20 @@ type TopUpItem {
 }
 
 // ==========================================
-// 3. PAYMENT METHODS
+// 3. CATEGORIES
+// For game categorization (Mobile, PC, RPG, etc.)
+// ==========================================
+model categories {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique // "Mobile", "PC", "RPG"
+  slug      String   @unique // "mobile", "pc", "rpg"
+  createdAt DateTime @default(now())
+
+  games     games[]
+}
+
+// ==========================================
+// 4. PAYMENT METHODS
 // Untuk menggantikan listPayment statis di frontend
 // ==========================================
 model payment_methods {
@@ -132,6 +151,37 @@ model vouchers {
 }
 
 // ==========================================
+// 6. VOUCHER REDEMPTIONS
+// Tracks per-user voucher redemption (one-time use per user)
+// ==========================================
+model voucher_redemptions {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  voucherId String   @db.ObjectId
+  code      String   // Denormalized for easy reference
+  createdAt DateTime @default(now())
+
+  @@index([userId, voucherId])
+}
+
+// ==========================================
+// 7. CAROUSEL SLIDES
+// For dynamic hero carousel content management
+// ==========================================
+model carousel_slides {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  image     Bytes?   // Slide background image
+  title     String   // "Top Up Game Terpercaya"
+  subtitle  String   // "Murah, Cepat, dan Aman..."
+  cta       String   // "Lihat Game"
+  link      String   // "#all-games"
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
 // 6. POINT CONFIGS
 // Tier configuration for dynamic point rewards
 // ==========================================
@@ -141,4 +191,48 @@ model point_configs {
   minSpent    Float
   rewardRate  Float
   levelNumber Int     @unique
+}
+
+// ==========================================
+// 8. PROMOS
+// For dynamic campaign list on Promo Page
+// ==========================================
+model promos {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  category     String   // e.g. "Weekly Diamond Pass"
+  gameName     String   // e.g. "Mobile Legends"
+  periodText   String   // e.g. "1 Oktober–31 Desember 2025"
+  timeText     String?  // e.g. "(15.00-18.00)"
+  cashbackText String   // e.g. "Cashback 100% (maks. Rp27.195)"
+  notes        String?  // e.g. "Promo hanya berlaku untuk pengguna RAST Plus"
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+// ==========================================
+// 9. PROMO BANNERS / CONFIGS
+// For page-level header and config on Promo Page
+// ==========================================
+model promo_banners {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  title        String   // "Promo Games: Cashback hingga..."
+  periodText   String   // "Periode Promo 1-30 Okt 2025"
+  regionText   String   @default("Seluruh Indonesia")
+  categoryText String   @default("Games")
+  subheading   String   // "Promo Mobile Legends di RAST Games..."
+  image        Bytes?   // Page banner image binary
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+// ==========================================
+// 10. CONTACT MESSAGES
+// For user feedback/complaints on Contact Page
+// ==========================================
+model contact_messages {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      users    @relation(fields: [userId], references: [id])
+  message   String
+  createdAt DateTime @default(now())
 }
