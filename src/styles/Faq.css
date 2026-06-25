@@ -1,88 +1,194 @@
+/* =============================================================
+   FAQ — Cyber-Gamer Theme (RAST-7 Brand)
+   Full hero layout + glass accordion
+   ============================================================= */
 
-
-
-.faq-bgn-ats {
-    height: 60vh;
-    margin-inline: 5%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .faq-bgn-ats h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-  }
-
-.faq-bgn-ats p {
-    font-size: 1.2rem;
+/* ─── Main Layout ─── */
+.faq-main {
+  position: relative;
+  z-index: 2;
+  background: transparent;
 }
 
-@keyframes fadeInOut {
-    0% {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
+/* ─── Hero ─── */
+.faq-hero {
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 60px 24px;
 }
 
+.faq-hero-title {
+  font-family: 'Audiowide', sans-serif;
+  font-size: 3rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 18px;
+  text-shadow: 0 0 25px rgba(0, 242, 255, 0.35);
 }
 
+.faq-hero-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.5);
+  max-width: 600px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ─── Q&A Section ─── */
 .faq-section {
-    box-shadow:inset 0 0 30px 20px rgba(255, 255, 255, 0.1),0 0 100px 40px rgba(255, 255, 255, .1);
-    padding-block: 2rem;
-    background-color: rgb(26, 26, 46);
-    border-radius: 16px 16px 0 0;
-    animation: fadeInOut 0.8s ease 0.1s both;
+  padding-block: 2rem;
+  padding-inline: 5%;
+  padding-bottom: 100px;
+  background: rgba(26, 26, 46, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 64px 64px 0 0;
+  border-top: 1px solid rgba(0, 242, 255, 0.15);
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.25);
 }
 
-.faq-q-a-wrapper {
-    margin: 1rem;
-    background-color: rgba(245, 245, 245,.1);
-    border-radius: 16px;
-
+.faq-list {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.faq-q-a-wrapper .faq-quest{
-    padding: 1rem 2rem;
-    font-weight: bold;
+/* ─── FAQ Item ─── */
+.faq-item {
+  margin-bottom: 14px;
+  background: rgba(10, 10, 30, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  overflow: hidden;
 }
 
-.faq-q-a-wrapper .faq-quest span {
-    background-color: red;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: .2rem;
+.faq-item:hover {
+  border-color: rgba(0, 242, 255, 0.08);
+  background: rgba(10, 10, 30, 0.35);
 }
 
-.faq-q-a-wrapper .faq-quest p{
-    margin: 0;
-    display: flex;
-    align-items: center;
-    color: #f0f0f0;
+.faq-item a {
+  color: inherit;
+  text-decoration: none;
+  display: block;
 }
 
-
-.faq-q-a-wrapper .faq-answer {
-    padding-left: 1rem;
+/* ─── Question ─── */
+.faq-question {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 26px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  cursor: pointer;
+  user-select: none;
 }
 
-.faq-q-a-wrapper .card {
-    background: none;
-    border: none;
+.faq-number {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0, 242, 255, 0.12), rgba(0, 123, 255, 0.12));
+  border: 1px solid rgba(0, 242, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Audiowide', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #00f2ff;
+  filter: drop-shadow(0 0 4px rgba(0, 242, 255, 0.2));
 }
 
-.faq-q-a-wrapper a{
-    color: black;
-    text-decoration: none;
+/* ─── Answer ─── */
+.faq-answer {
+  padding: 0 26px 22px 78px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.7;
 }
 
+.faq-answer ol {
+  margin: 10px 0;
+  padding-left: 22px;
+}
 
+.faq-answer ol li {
+  margin-bottom: 4px;
+}
+
+/* ─── Bootstrap collapse override ─── */
+.collapse:not(.show) {
+  display: none;
+}
+
+.collapsing {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .faq-hero {
+    min-height: 40vh;
+    padding: 50px 20px;
+  }
+
+  .faq-hero-title {
+    font-size: 2rem;
+  }
+
+  .faq-hero-sub {
+    font-size: 1rem;
+  }
+
+  .faq-section {
+    padding-inline: 4%;
+  }
+
+  .faq-question {
+    padding: 16px 20px;
+    font-size: 0.92rem;
+  }
+
+  .faq-answer {
+    padding: 0 20px 18px 60px;
+    font-size: 0.85rem;
+  }
+
+  .faq-number {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .faq-hero-title {
+    font-size: 1.5rem;
+  }
+
+  .faq-question {
+    font-size: 0.85rem;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .faq-answer {
+    padding: 0 16px 16px 48px;
+  }
+}
