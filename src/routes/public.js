@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.js';
+import { sendImageResponse } from '../utils/imageUtils.js';
 
 const router = express.Router();
 
@@ -147,25 +148,7 @@ router.get('/game-media/:id/:type', async (req, res) => {
       return res.status(404).json({ success: false, message: "Media tidak ditemukan" });
     }
 
-    const mimeMap = {
-      png: 'image/png',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      gif: 'image/gif',
-      webp: 'image/webp'
-    };
-
-    const buffer = Buffer.isBuffer(game[field]) ? game[field] : Buffer.from(game[field]);
-    const sig = buffer.slice(0, 4).toString('hex');
-    const mime = sig.startsWith('8950') ? 'image/png'
-      : sig.startsWith('ffd8') ? 'image/jpeg'
-      : sig.startsWith('4746') ? 'image/gif'
-      : sig.startsWith('5249') ? 'image/webp'
-      : 'image/png';
-
-    res.set('Content-Type', mime);
-    res.set('Cache-Control', 'no-cache, must-revalidate');
-    res.send(buffer);
+    sendImageResponse(res, game[field]);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -275,17 +258,7 @@ router.get('/carousel-media/:id', async (req, res) => {
       return res.status(404).json({ success: false, message: "Gambar tidak ditemukan" });
     }
 
-    const buffer = Buffer.isBuffer(slide.image) ? slide.image : Buffer.from(slide.image);
-    const sig = buffer.slice(0, 4).toString('hex');
-    const mime = sig.startsWith('8950') ? 'image/png'
-      : sig.startsWith('ffd8') ? 'image/jpeg'
-      : sig.startsWith('4746') ? 'image/gif'
-      : sig.startsWith('5249') ? 'image/webp'
-      : 'image/png';
-
-    res.set('Content-Type', mime);
-    res.set('Cache-Control', 'no-cache, must-revalidate');
-    res.send(buffer);
+    sendImageResponse(res, slide.image);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -304,17 +277,7 @@ router.get('/promo-media/banner/:id', async (req, res) => {
       return res.status(404).json({ success: false, message: "Gambar banner tidak ditemukan" });
     }
 
-    const buffer = Buffer.isBuffer(banner.image) ? banner.image : Buffer.from(banner.image);
-    const sig = buffer.slice(0, 4).toString('hex');
-    const mime = sig.startsWith('8950') ? 'image/png'
-      : sig.startsWith('ffd8') ? 'image/jpeg'
-      : sig.startsWith('4746') ? 'image/gif'
-      : sig.startsWith('5249') ? 'image/webp'
-      : 'image/png';
-
-    res.set('Content-Type', mime);
-    res.set('Cache-Control', 'no-cache, must-revalidate');
-    res.send(buffer);
+    sendImageResponse(res, banner.image);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -519,17 +482,7 @@ router.get('/avatar/:userId', async (req, res) => {
       return res.sendFile('asset/profile.png', { root: '.' });
     }
 
-    const buffer = Buffer.isBuffer(user.avatar) ? user.avatar : Buffer.from(user.avatar);
-    const sig = buffer.slice(0, 4).toString('hex');
-    const mime = sig.startsWith('8950') ? 'image/png'
-      : sig.startsWith('ffd8') ? 'image/jpeg'
-      : sig.startsWith('4746') ? 'image/gif'
-      : sig.startsWith('5249') ? 'image/webp'
-      : 'image/jpeg';
-
-    res.set('Content-Type', mime);
-    res.set('Cache-Control', 'no-cache, must-revalidate');
-    res.send(buffer);
+    sendImageResponse(res, user.avatar);
   } catch (err) {
     res.status(500).json({ success: false, message: "Gagal mengambil avatar" });
   }

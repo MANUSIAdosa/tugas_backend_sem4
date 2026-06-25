@@ -1,7 +1,11 @@
 import BaseService from './BaseService.js';
-import PointConfigService from './PointConfigService.js';
 
 class TransactionService extends BaseService {
+
+  constructor(prismaClient, pointConfigService) {
+    super(prismaClient);
+    this.pointConfigService = pointConfigService;
+  }
 
   async createTransaction({ userId, targetAccount, purchaseDetails, billing }) {
     // Cek user & saldo poin
@@ -39,8 +43,7 @@ class TransactionService extends BaseService {
     }
 
     // Tambah poin reward (dynamic rate based on user tier)
-    const pointConfigService = new PointConfigService(this.prisma);
-    const config = await pointConfigService.getConfigForUser(userId);
+    const config = await this.pointConfigService.getConfigForUser(userId);
     const rewardPoints = Math.floor(billing.totalPaid * config.rewardRate);
     if (rewardPoints > 0) {
       await this.prisma.users.update({
@@ -50,7 +53,7 @@ class TransactionService extends BaseService {
     }
 
     // Update user level based on new spending
-    await pointConfigService.recalculateLevel(userId);
+    await this.pointConfigService.recalculateLevel(userId);
 
     return newTransaction;
   }
@@ -126,20 +129,19 @@ class TransactionService extends BaseService {
       take: 10
     });
 
-    // Enrich with username from users table
-    const enriched = await Promise.all(result.map(async (entry, index) => {
-      const user = await this.prisma.users.findUnique({
-        where: { id: entry.userId },
-        select: { username: true }
-      });
-      return {
-        rank: index + 1,
-        username: user?.username ?? 'Unknown',
-        totalSpent: entry._sum.totalPaid ?? 0
-      };
-    }));
+    // Batch-fetch all usernames in a single query instead of N individual queries
+    const userIds = result.map(entry => entry.userId);
+    const users = await this.prisma.users.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, username: true }
+    });
+    const userMap = new Map(users.map(u => [u.id, u.username]));
 
-    return enriched;
+    return result.map((entry, index) => ({
+      rank: index + 1,
+      username: userMap.get(entry.userId) ?? 'Unknown',
+      totalSpent: entry._sum.totalPaid ?? 0
+    }));
   }
 }
 

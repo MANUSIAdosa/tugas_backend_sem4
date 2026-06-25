@@ -1,22 +1,8 @@
 import express from 'express';
-import multer from 'multer';
 import { authenticate, authorizeAdmin } from '../middleware/auth.js';
+import { imageUpload } from '../middleware/upload.js';
 
 const router = express.Router();
-
-// Multer setup for game image uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB per file
-  fileFilter: (req, file, cb) => {
-    const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
-    if (allowed.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Format file tidak didukung. Gunakan PNG, JPG, GIF, atau WebP.'));
-    }
-  }
-});
 
 // All admin routes require authentication + admin role
 router.use(authenticate, authorizeAdmin);
@@ -131,9 +117,6 @@ router.get('/admin/games/:id', async (req, res) => {
       bgUrl: game.bg ? `/api/game-media/${game.id}/bg` : null,
       itemIconUrl: game.itemIcon ? `/api/game-media/${game.id}/icon` : null
     };
-    delete data.logo;
-    delete data.bg;
-    delete data.itemIcon;
 
     res.json({ success: true, data });
   } catch (err) {
@@ -170,7 +153,7 @@ router.get('/admin/games/:id', async (req, res) => {
  *       400:
  *         description: Validation error
  */
-router.post('/admin/games', upload.fields([
+router.post('/admin/games', imageUpload.fields([
   { name: 'logo', maxCount: 1 },
   { name: 'bg', maxCount: 1 },
   { name: 'itemIcon', maxCount: 1 }
@@ -255,7 +238,7 @@ router.post('/admin/games', upload.fields([
  *       404:
  *         description: Game not found
  */
-router.put('/admin/games/:id', upload.fields([
+router.put('/admin/games/:id', imageUpload.fields([
   { name: 'logo', maxCount: 1 },
   { name: 'bg', maxCount: 1 },
   { name: 'itemIcon', maxCount: 1 }
@@ -640,7 +623,7 @@ router.get('/admin/carousel-slides', async (req, res) => {
   }
 });
 
-router.post('/admin/carousel-slides', upload.fields([
+router.post('/admin/carousel-slides', imageUpload.fields([
   { name: 'image', maxCount: 1 }
 ]), async (req, res) => {
   try {
@@ -665,7 +648,7 @@ router.post('/admin/carousel-slides', upload.fields([
   }
 });
 
-router.put('/admin/carousel-slides/:id', upload.fields([
+router.put('/admin/carousel-slides/:id', imageUpload.fields([
   { name: 'image', maxCount: 1 }
 ]), async (req, res) => {
   try {
@@ -812,7 +795,7 @@ router.get('/admin/promo-banners', async (req, res) => {
   }
 });
 
-router.post('/admin/promo-banners', upload.fields([
+router.post('/admin/promo-banners', imageUpload.fields([
   { name: 'image', maxCount: 1 }
 ]), async (req, res) => {
   try {
@@ -837,7 +820,7 @@ router.post('/admin/promo-banners', upload.fields([
   }
 });
 
-router.put('/admin/promo-banners/:id', upload.fields([
+router.put('/admin/promo-banners/:id', imageUpload.fields([
   { name: 'image', maxCount: 1 }
 ]), async (req, res) => {
   try {

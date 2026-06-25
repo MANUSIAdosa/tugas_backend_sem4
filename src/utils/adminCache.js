@@ -1,4 +1,4 @@
-import { getAuthToken } from './api';
+import api from './api';
 
 export const CACHE_KEYS = {
   GAMES: 'admin_cache_games',
@@ -30,16 +30,5 @@ export const setCache = (key, data) => {
   }
 };
 
-/** Auth fetch for multipart/form-data */
-export const authFormFetch = async (endpoint, method, formData) => {
-  const token = getAuthToken();
-  const headers = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(endpoint, { method, headers, body: formData });
-  if (res.status === 401) {
-    sessionStorage.clear();
-    window.location.href = '/login';
-    throw new Error('Unauthorized');
-  }
-  return res.json();
-};
+/** Auth fetch for multipart/form-data — delegates to api.formFetch */
+export const authFormFetch = api.formFetch;

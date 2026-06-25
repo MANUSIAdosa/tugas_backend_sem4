@@ -1,29 +1,11 @@
 import express from 'express';
-import multer from 'multer';
-import path from 'path';
 import { authenticate, ensureSelf } from '../middleware/auth.js';
+import { imageUpload } from '../middleware/upload.js';
 
 const router = express.Router();
 
 // Apply authentication to all routes in this file
 router.use(authenticate);
-
-// Multer setup for avatar upload (memory storage)
-const avatarStorage = multer.memoryStorage();
-const avatarUpload = multer({
-  storage: avatarStorage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    if (extname && mimetype) {
-      cb(null, true);
-    } else {
-      cb(new Error('Hanya file gambar yang diperbolehkan (jpeg, jpg, png, gif, webp)'));
-    }
-  }
-});
 
 /**
  * @openapi
@@ -52,7 +34,7 @@ const avatarUpload = multer({
  *       401: { description: Unauthorized }
  *       403: { description: Forbidden - not your avatar }
  */
-router.post('/upload-avatar', avatarUpload.single('avatar'), ensureSelf, async (req, res) => {
+router.post('/upload-avatar', imageUpload.single('avatar'), ensureSelf, async (req, res) => {
   try {
     const { userId } = req.body;
 
@@ -137,7 +119,7 @@ router.get('/points/:userId', ensureSelf, async (req, res) => {
     const points = await req.userService.getPoints(userId);
     res.json({ success: true, points });
   } catch (err) {
-    req.userService.errorResponse(res, err.message, 404);
+    req.userService.handleError(res, err, "Gagal mengambil data poin");
   }
 });
 

@@ -107,6 +107,33 @@ export const api = {
     }
 
     return response;
+  },
+
+  /**
+   * Generic form-data fetch that supports any HTTP method and returns parsed JSON.
+   * Used by admin components for multipart uploads (POST/PUT).
+   * @param {string} endpoint - API endpoint
+   * @param {string} method - HTTP method (POST, PUT, etc.)
+   * @param {FormData} formData - FormData object
+   * @returns {Promise<Object>} Parsed JSON response
+   */
+  formFetch: async (endpoint, method, formData) => {
+    const token = getAuthToken();
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      method,
+      headers,
+      body: formData
+    });
+
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+
+    return response.json();
   }
 };
 

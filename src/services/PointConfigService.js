@@ -9,18 +9,14 @@ class PointConfigService extends BaseService {
         _sum: { totalPaid: true }
       });
       const totalSpent = agg[0]?._sum.totalPaid ?? 0;
-      console.log('Total spent for user', userId, ':', totalSpent);
 
       const config = await this.prisma.point_configs.findFirst({
         where: { minSpent: { lte: totalSpent } },
         orderBy: { minSpent: 'desc' }
       });
-      console.log('Found config:', config);
 
       if (!config) {
-        const bronze = await this.prisma.point_configs.findUnique({ where: { tierName: 'bronze' } });
-        console.log('Bronze config:', bronze);
-        return bronze;
+        return await this.prisma.point_configs.findUnique({ where: { tierName: 'bronze' } });
       }
       return config;
     } catch (error) {
@@ -42,7 +38,6 @@ class PointConfigService extends BaseService {
     try {
       // Get current tier config
       const currentConfig = await this.getConfigForUser(userId);
-      console.log('Current config in getMileage:', currentConfig);
 
       if (!currentConfig) {
         throw new Error('No point config found for user');
