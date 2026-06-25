@@ -87,16 +87,66 @@ const authFormFetch = async (endpoint, method, formData) => {
   return res.json();
 };
 
+const CACHE_KEYS = {
+  GAMES: 'admin_cache_games',
+  USERS: 'admin_cache_users',
+  CATEGORIES: 'admin_cache_categories',
+  SLIDES: 'admin_cache_slides',
+  PROMOS: 'admin_cache_promos',
+  BANNERS: 'admin_cache_banners',
+  CONTACT: 'admin_cache_contact',
+  ITEMS: (gameId) => `admin_cache_items_${gameId}`
+};
+
+const getCache = (key) => {
+  try {
+    const data = sessionStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  } catch (e) {
+    console.error('Error reading cache', e);
+    return null;
+  }
+};
+
+const setCache = (key, data) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    console.error('Error writing cache', e);
+  }
+};
+
 export default function Admin() {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null);
+  const [userData] = useState(() => {
+    const stored = sessionStorage.getItem('currentUser');
+    const token = sessionStorage.getItem('authToken');
+    if (!stored || !token) return null;
+    try {
+      const u = JSON.parse(stored);
+      if (u.isAdmin) return u;
+    } catch {
+      return null;
+    }
+    return null;
+  });
   const [activeTab, setActiveTab] = useState('games');
-  const [games, setGames] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [carouselSlides, setCarouselSlides] = useState([]);
-  const [promos, setPromos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [games, setGames] = useState(() => getCache(CACHE_KEYS.GAMES) || []);
+  const [users, setUsers] = useState(() => getCache(CACHE_KEYS.USERS) || []);
+  const [categories, setCategories] = useState(() => getCache(CACHE_KEYS.CATEGORIES) || []);
+  const [carouselSlides, setCarouselSlides] = useState(() => getCache(CACHE_KEYS.SLIDES) || []);
+  const [promos, setPromos] = useState(() => getCache(CACHE_KEYS.PROMOS) || []);
+  const [loading, setLoading] = useState(() => {
+    const hasCached = 
+      sessionStorage.getItem('admin_cache_games') &&
+      sessionStorage.getItem('admin_cache_users') &&
+      sessionStorage.getItem('admin_cache_categories') &&
+      sessionStorage.getItem('admin_cache_slides') &&
+      sessionStorage.getItem('admin_cache_promos') &&
+      sessionStorage.getItem('admin_cache_banners') &&
+      sessionStorage.getItem('admin_cache_contact');
+    return !hasCached;
+  });
 
   // Modal & form state
   const [modal, setModal] = useState(null);
@@ -139,9 +189,9 @@ export default function Admin() {
   const [bannerHasImage, setBannerHasImage] = useState(false);
   const [removeBannerImage, setRemoveBannerImage] = useState(false);
 
-  const [promoBanners, setPromoBanners] = useState([]);
+  const [promoBanners, setPromoBanners] = useState(() => getCache(CACHE_KEYS.BANNERS) || []);
   const [promoSubTab, setPromoSubTab] = useState('rows'); // 'rows' or 'banners'
-  const [contactMessages, setContactMessages] = useState([]);
+  const [contactMessages, setContactMessages] = useState(() => getCache(CACHE_KEYS.CONTACT) || []);
 
   // Refresh key to bust image cache after updates
   const [refreshKey, setRefreshKey] = useState(0);
@@ -154,23 +204,24 @@ export default function Admin() {
   };
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('currentUser');
-    const token = sessionStorage.getItem('authToken');
-    if (!stored || !token) { navigate('/login'); return; }
-    try {
-      const u = JSON.parse(stored);
-      if (!u.isAdmin) { navigate('/'); return; }
-      setUserData(u);
-    } catch { navigate('/login'); }
-  }, [navigate]);
+    if (!userData) {
+      navigate('/login');
+    }
+  }, [userData, navigate]);
 
   const loadGames = useCallback(async () => {
     try {
       const token = getAuthToken();
       const res = await fetch('/api/admin/games', { headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) setGames(json.data);
-    } catch { showToast('Gagal memuat games', 'error'); }
+      if (json.success) {
+        setGames(json.data);
+        setCache(CACHE_KEYS.GAMES, json.data);
+      }
+    } catch {
+      const cached = getCache(CACHE_KEYS.GAMES);
+      if (!cached) showToast('Gagal memuat games', 'error');
+    }
   }, []);
 
   const loadUsers = useCallback(async () => {
@@ -178,8 +229,14 @@ export default function Admin() {
       const token = getAuthToken();
       const res = await fetch('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) setUsers(json.data);
-    } catch { showToast('Gagal memuat users', 'error'); }
+      if (json.success) {
+        setUsers(json.data);
+        setCache(CACHE_KEYS.USERS, json.data);
+      }
+    } catch {
+      const cached = getCache(CACHE_KEYS.USERS);
+      if (!cached) showToast('Gagal memuat users', 'error');
+    }
   }, []);
 
   const loadCategories = useCallback(async () => {
@@ -187,7 +244,10 @@ export default function Admin() {
       const token = getAuthToken();
       const res = await fetch('/api/admin/categories', { headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) setCategories(json.data);
+      if (json.success) {
+        setCategories(json.data);
+        setCache(CACHE_KEYS.CATEGORIES, json.data);
+      }
     } catch { /* ignore */ }
   }, []);
 
@@ -196,7 +256,10 @@ export default function Admin() {
       const token = getAuthToken();
       const res = await fetch('/api/admin/carousel-slides', { headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) setCarouselSlides(json.data);
+      if (json.success) {
+        setCarouselSlides(json.data);
+        setCache(CACHE_KEYS.SLIDES, json.data);
+      }
     } catch { /* ignore */ }
   }, []);
 
@@ -205,8 +268,14 @@ export default function Admin() {
       const token = getAuthToken();
       const res = await fetch('/api/admin/promos', { headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) setPromos(json.data);
-    } catch { showToast('Gagal memuat promos', 'error'); }
+      if (json.success) {
+        setPromos(json.data);
+        setCache(CACHE_KEYS.PROMOS, json.data);
+      }
+    } catch {
+      const cached = getCache(CACHE_KEYS.PROMOS);
+      if (!cached) showToast('Gagal memuat promos', 'error');
+    }
   }, []);
 
   const loadPromoBanners = useCallback(async () => {
@@ -214,8 +283,14 @@ export default function Admin() {
       const token = getAuthToken();
       const res = await fetch('/api/admin/promo-banners', { headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) setPromoBanners(json.data);
-    } catch { showToast('Gagal memuat promo banners', 'error'); }
+      if (json.success) {
+        setPromoBanners(json.data);
+        setCache(CACHE_KEYS.BANNERS, json.data);
+      }
+    } catch {
+      const cached = getCache(CACHE_KEYS.BANNERS);
+      if (!cached) showToast('Gagal memuat promo banners', 'error');
+    }
   }, []);
 
   const loadContactMessages = useCallback(async () => {
@@ -223,30 +298,62 @@ export default function Admin() {
       const token = getAuthToken();
       const res = await fetch('/api/admin/contact-messages', { headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) setContactMessages(json.data);
-    } catch { showToast('Gagal memuat pesan masuk', 'error'); }
+      if (json.success) {
+        setContactMessages(json.data);
+        setCache(CACHE_KEYS.CONTACT, json.data);
+      }
+    } catch {
+      const cached = getCache(CACHE_KEYS.CONTACT);
+      if (!cached) showToast('Gagal memuat pesan masuk', 'error');
+    }
   }, []);
 
   const loadItems = useCallback(async (gameId) => {
-    if (!gameId) { setGameItems([]); return; }
+    if (!gameId) {
+      setTimeout(() => setGameItems([]), 0);
+      return;
+    }
+    const key = CACHE_KEYS.ITEMS(gameId);
+    const cached = getCache(key);
+    if (cached) {
+      setTimeout(() => setGameItems(cached), 0);
+    }
     try {
       const token = getAuthToken();
       const res = await fetch(`/api/admin/games/${gameId}/items`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const json = await res.json();
-      if (json.success) setGameItems(json.data.items);
-    } catch { showToast('Gagal memuat items', 'error'); }
+      if (json.success) {
+        setGameItems(json.data.items);
+        setCache(key, json.data.items);
+      }
+    } catch {
+      if (!cached) showToast('Gagal memuat items', 'error');
+    }
   }, []);
 
   useEffect(() => {
     if (!userData) return;
-    setLoading(true);
-    Promise.all([loadGames(), loadUsers(), loadCategories(), loadCarouselSlides(), loadPromos(), loadPromoBanners(), loadContactMessages()]).finally(() => setLoading(false));
+    const timer = setTimeout(() => {
+      Promise.all([
+        loadGames(),
+        loadUsers(),
+        loadCategories(),
+        loadCarouselSlides(),
+        loadPromos(),
+        loadPromoBanners(),
+        loadContactMessages()
+      ]).finally(() => setLoading(false));
+    }, 0);
+    return () => clearTimeout(timer);
   }, [userData, loadGames, loadUsers, loadCategories, loadCarouselSlides, loadPromos, loadPromoBanners, loadContactMessages]);
 
   useEffect(() => {
-    if (activeTab === 'items' && selectedGame) loadItems(selectedGame);
+    if (activeTab === 'items' && selectedGame) {
+      const timer = setTimeout(() => loadItems(selectedGame), 0);
+      return () => clearTimeout(timer);
+    }
   }, [activeTab, selectedGame, loadItems]);
 
   // ---- helpers ----
@@ -285,7 +392,7 @@ export default function Admin() {
         setModal(null);
         setRefreshKey(k => k + 1);
         resetGameForm();
-        loadGames();
+        loadGames(true);
       } else showToast(json.message, 'error');
     } catch { showToast('Gagal membuat game', 'error'); }
   };
@@ -299,7 +406,7 @@ export default function Admin() {
         setModal(null);
         setRefreshKey(k => k + 1);
         resetGameForm();
-        loadGames();
+        loadGames(true);
       } else showToast(json.message, 'error');
     } catch { showToast('Gagal mengupdate game', 'error'); }
   };
@@ -310,7 +417,7 @@ export default function Admin() {
       const token = getAuthToken();
       const res = await fetch(`/api/admin/games/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) { showToast(json.message); loadGames(); }
+      if (json.success) { showToast(json.message); loadGames(true); }
       else showToast(json.message, 'error');
     } catch { showToast('Gagal menghapus game', 'error'); }
   };
@@ -357,7 +464,8 @@ export default function Admin() {
         showToast(json.message);
         setModal(null);
         setItemForm(emptyItemForm);
-        loadItems(selectedGame);
+        loadItems(selectedGame, true);
+        loadGames(true);
       } else showToast(json.message, 'error');
     } catch { showToast('Gagal menambah item', 'error'); }
   };
@@ -391,7 +499,7 @@ export default function Admin() {
         setModal(null);
         setItemForm(emptyItemForm);
         setEditTarget(null);
-        loadItems(selectedGame);
+        loadItems(selectedGame, true);
       } else showToast(json.message, 'error');
     } catch { showToast('Gagal mengupdate item', 'error'); }
   };
@@ -404,7 +512,11 @@ export default function Admin() {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       const json = await res.json();
-      if (json.success) { showToast(json.message); loadItems(selectedGame); }
+      if (json.success) {
+        showToast(json.message);
+        loadItems(selectedGame, true);
+        loadGames(true);
+      }
       else showToast(json.message, 'error');
     } catch { showToast('Gagal menghapus item', 'error'); }
   };
@@ -427,7 +539,7 @@ export default function Admin() {
         showToast(json.message);
         setModal(null);
         setPromoForm(emptyPromoForm);
-        loadPromos();
+        loadPromos(true);
       } else showToast(json.message, 'error');
     } catch { showToast('Gagal membuat promo', 'error'); }
   };
@@ -450,7 +562,7 @@ export default function Admin() {
         setModal(null);
         setPromoForm(emptyPromoForm);
         setPromoEdit(null);
-        loadPromos();
+        loadPromos(true);
       } else showToast(json.message, 'error');
     } catch { showToast('Gagal mengupdate promo', 'error'); }
   };
@@ -461,7 +573,7 @@ export default function Admin() {
       const token = getAuthToken();
       const res = await fetch(`/api/admin/promos/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) { showToast(json.message); loadPromos(); }
+      if (json.success) { showToast(json.message); loadPromos(true); }
       else showToast(json.message, 'error');
     } catch { showToast('Gagal menghapus promo', 'error'); }
   };
@@ -486,7 +598,7 @@ export default function Admin() {
         setRefreshKey(k => k + 1);
         setBannerForm(emptyBannerForm);
         setBannerImage(null);
-        loadPromoBanners();
+        loadPromoBanners(true);
       } else showToast(json.message, 'error');
     } catch { showToast('Gagal membuat banner promo', 'error'); }
   };
@@ -513,7 +625,7 @@ export default function Admin() {
         setBannerImage(null);
         setBannerEdit(null);
         setRemoveBannerImage(false);
-        loadPromoBanners();
+        loadPromoBanners(true);
       } else showToast(json.message, 'error');
     } catch { showToast('Gagal mengupdate banner promo', 'error'); }
   };
@@ -524,7 +636,7 @@ export default function Admin() {
       const token = getAuthToken();
       const res = await fetch(`/api/admin/promo-banners/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       const json = await res.json();
-      if (json.success) { showToast(json.message); loadPromoBanners(); }
+      if (json.success) { showToast(json.message); loadPromoBanners(true); }
       else showToast(json.message, 'error');
     } catch { showToast('Gagal menghapus banner promo', 'error'); }
   };
@@ -537,7 +649,7 @@ export default function Admin() {
       const json = await res.json();
       if (json.success) {
         showToast(json.message);
-        loadContactMessages();
+        loadContactMessages(true);
       } else showToast(json.message, 'error');
     } catch { showToast('Gagal menghapus pesan', 'error'); }
   };
@@ -782,7 +894,7 @@ export default function Admin() {
                                     if (!confirm(`Hapus kategori "${cat.name}"?`)) return;
                                     const token = getAuthToken();
                                     await fetch(`/api/admin/categories/${cat.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-                                    loadCategories();
+                                    loadCategories(true);
                                   }}>Hapus</button>
                               </div>
                             </td>
@@ -834,7 +946,7 @@ export default function Admin() {
                                     if (!confirm(`Hapus slide "${s.title}"?`)) return;
                                     const token = getAuthToken();
                                     await fetch(`/api/admin/carousel-slides/${s.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-                                    loadCarouselSlides();
+                                    loadCarouselSlides(true);
                                   }}>Hapus</button>
                               </div>
                             </td>
@@ -1189,7 +1301,7 @@ export default function Admin() {
               setModal(null);
               setCatForm(emptyCatForm);
               setCatEdit(null);
-              loadCategories();
+              loadCategories(true);
             } else showToast(json.message, 'error');
           }}>
             <Input label="Nama Kategori" value={catForm.name}
@@ -1252,7 +1364,7 @@ export default function Admin() {
               setSlideImage(null);
               setSlideEdit(null);
               setSlideHasImage(false);
-              loadCarouselSlides();
+              loadCarouselSlides(true);
             } else showToast(json.message, 'error');
           }}>
             <Input label="Judul" value={slideForm.title}
