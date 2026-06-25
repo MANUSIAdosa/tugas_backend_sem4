@@ -865,10 +865,35 @@ router.put('/admin/promo-banners/:id', upload.fields([
   }
 });
 
-router.delete('/admin/promo-banners/:id', async (req, res) => {
+// ==============================
+// CONTACT MESSAGES CRUD (admin)
+// ==============================
+
+router.get('/admin/contact-messages', async (req, res) => {
   try {
-    await req.prisma.promo_banners.delete({ where: { id: req.params.id } });
-    res.json({ success: true, message: "Banner promo berhasil dihapus" });
+    const messages = await req.prisma.contact_messages.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            username: true,
+            email: true
+          }
+        }
+      }
+    });
+    res.json({ success: true, data: messages });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.delete('/admin/contact-messages/:id', async (req, res) => {
+  try {
+    await req.prisma.contact_messages.delete({
+      where: { id: req.params.id }
+    });
+    res.json({ success: true, message: "Pesan berhasil dihapus" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

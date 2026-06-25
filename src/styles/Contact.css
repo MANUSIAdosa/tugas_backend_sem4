@@ -8,73 +8,91 @@
 }
 
 .contact-container {
-    background-color: rgba(26, 26, 46, 0.8);
-    border-radius: 10px;
+    background: rgba(30, 30, 54, 0.45);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 242, 255, 0.12);
+    border-radius: 16px;
     display: flex;
     justify-content: center;
-    width: 90%;
+    width: 95%;
     max-width: 500px;
     margin: 50px auto;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding: 30px 20px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.45), 0 0 25px rgba(0, 242, 255, 0.05);
 }
 
 .contact-container-contact {
     font-family: "Audiowide", sans-serif;
-    background-color: rgba(26, 26, 46, 0.8);
-    border-radius: 10px;
+    background: rgba(30, 30, 54, 0.45);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 242, 255, 0.12);
+    border-radius: 16px;
     display: flex;
     justify-content: center;
-    width: 90%;
+    width: 95%;
     max-width: 500px;
-    margin: 20px auto;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    margin: 30px auto;
+    padding: 30px 20px;
     flex-direction: column;
     text-align: center;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.45), 0 0 25px rgba(0, 242, 255, 0.05);
 }
 
 .contact-container-contact img {
     border-radius: 50%;
-    width: 10%;
-    margin: 10px;
+    width: 28px;
+    height: 28px;
+    margin-right: 12px;
 }
 
 .contact-form-grup label {
     font-family: "Audiowide", sans-serif;
+    color: #00f2ff;
+    text-shadow: 0 0 8px rgba(0, 242, 255, 0.35);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+    font-size: 0.95rem;
 }
 
 .contact-form-grup {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .contact-form-grup input[type="text"],
 .contact-form-grup input[type="email"] {
-    width: 300px;
-    padding: 10px;
-    border: 1px solid lab(82.05% 0 -0.01);
-    border-radius: 5px;
-    font-size: 16px;
+    width: 320px;
+    max-width: 100%;
+    padding: 12px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    font-size: 15px;
     box-sizing: border-box;
-    font-family: "Audiowide", sans-serif;
-    background-color: rgba(26, 26, 46, 0.8);
-    color: white;
+    font-family: "Inter", sans-serif;
+    background-color: rgba(15, 15, 30, 0.65);
+    color: #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.contact-form-grup input[type="text"]::placeholder,
+.contact-form-grup input[type="email"]::placeholder {
+    color: rgba(255, 255, 255, 0.3);
 }
 
 .contact-form-grup input[type="text"]:focus,
 .contact-form-grup input[type="email"]:focus {
-    border-color: #007bff;
+    border-color: #00f2ff;
     outline: none;
-    box-shadow: 0 0 5px rgba(0,123,255,0.7);
+    box-shadow: 0 0 12px rgba(0, 242, 255, 0.35);
+    background-color: rgba(15, 15, 30, 0.85);
 }
 
 .contact-form-grup label {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .contact-keluhan {
-    height: 200px;
+    height: 140px !important;
 }
 
 /* === CUSTOM ALERT === */
@@ -172,4 +190,122 @@
 .alert-btn:hover {
     opacity: 0.85;
     transform: translateY(-1px);
+}
+
+/* === Refined Administrative Contacts === */
+.contact-title-admin {
+    font-family: "Audiowide", sans-serif;
+    color: #fff;
+    font-size: 1.25rem;
+    margin: 0 0 10px 0;
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.contact-desc-admin {
+    font-family: "Inter", sans-serif;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    margin: 0 auto 24px auto;
+    max-width: 360px;
+    line-height: 1.5;
+}
+
+.contact-methods-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+}
+
+.contact-method-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.contact-method-label {
+    font-family: "Audiowide", sans-serif;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+
+.contact-method-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #fff;
+    font-family: "Inter", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 8px 20px;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    width: 240px;
+}
+
+.contact-method-link:hover {
+    background: rgba(0, 242, 255, 0.08);
+    border-color: rgba(0, 242, 255, 0.35);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.15);
+    color: #00f2ff;
+    transform: translateY(-2px);
+}
+
+/* === Submit Button === */
+.contact-submit-btn {
+    font-family: "Audiowide", sans-serif;
+    background: linear-gradient(135deg, #00f2ff, #007bff);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 20px auto 0;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+    width: 200px;
+}
+
+.contact-submit-btn:hover {
+    box-shadow: 0 0 25px rgba(0, 242, 255, 0.45);
+    transform: translateY(-2px);
+}
+
+/* === Alert Error Styles === */
+.alert-icon--error {
+    background: linear-gradient(135deg, #ff0055, #ff5500) !important;
+    box-shadow: 0 0 20px rgba(255, 0, 85, 0.5) !important;
+    animation: iconPulseError 2s ease infinite !important;
+}
+
+@keyframes iconPulseError {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 85, 0.5); }
+    50%       { box-shadow: 0 0 35px rgba(255, 85, 0, 0.8); }
+}
+
+/* === Authentication warning === */
+.contact-auth-warning {
+    background: rgba(255, 0, 85, 0.1);
+    border: 1px solid rgba(255, 0, 85, 0.25);
+    border-radius: 8px;
+    padding: 12px;
+    color: #ff0055;
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: "Audiowide", sans-serif;
+    font-size: 0.85rem;
+    text-shadow: 0 0 8px rgba(255, 0, 85, 0.35);
 }

@@ -1,4 +1,5 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -382,6 +383,77 @@ router.get('/promos', async (req, res) => {
       isActive: p.isActive
     }));
     res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * @openapi
+ * /api/contact:
+ *   post:
+ *     summary: Submit a contact message/complaint
+ *     tags: [Public]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [pesan]
+ *             properties:
+ *               nama: { type: string }
+ *               pesan: { type: string }
+ *     responses:
+ *       201:
+ *         description: Message successfully submitted
+ *       401:
+ *         description: Unauthorized
+ *       429:
+ *         description: Too many requests
+ */
+router.post('/contact', authenticate, async (req, res) => {
+  try {
+    const { pesan } = req.body;
+    if (!pesan) {
+      return res.status(400).json({ success: false, message: "Field pesan wajib diisi" });
+    }
+
+    // Retrieve the authenticated user's details from database to verify existence
+    const user = await req.prisma.users.findUnique({
+      where: { id: req.user.userId }
+    });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User tidak ditemukan" });
+    }
+
+    // UserId-based Rate Limiting (max 3 messages per 24 hours per user account)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const messageCount = await req.prisma.contact_messages.count({
+      where: {
+        userId: req.user.userId,
+        createdAt: { gte: oneDayAgo }
+      }
+    });
+
+    if (messageCount >= 3) {
+      return res.status(429).json({
+        success: false,
+        message: "Batas pengiriman pesan harian telah tercapai. Maksimal 3 pesan per hari."
+      });
+    }
+
+    await req.prisma.contact_messages.create({
+      data: {
+        userId: req.user.userId,
+        message: pesan
+      }
+    });
+
+    res.status(201).json({ success: true, message: "Pesan Anda berhasil dikirim. Terima kasih!" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

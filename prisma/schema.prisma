@@ -26,6 +26,9 @@ model users {
 
   // Relasi: Satu user bisa memiliki banyak riwayat transaksi
   transactions transactions[]
+
+  // Relasi ke contact_messages
+  contact_messages contact_messages[]
 }
 
 
@@ -206,4 +209,16 @@ model promo_banners {
   image        Bytes?   // Page banner image binary
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
+}
+
+// ==========================================
+// 10. CONTACT MESSAGES
+// For user feedback/complaints on Contact Page
+// ==========================================
+model contact_messages {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      users    @relation(fields: [userId], references: [id])
+  message   String
+  createdAt DateTime @default(now())
 }

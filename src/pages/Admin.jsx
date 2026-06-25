@@ -141,6 +141,7 @@ export default function Admin() {
 
   const [promoBanners, setPromoBanners] = useState([]);
   const [promoSubTab, setPromoSubTab] = useState('rows'); // 'rows' or 'banners'
+  const [contactMessages, setContactMessages] = useState([]);
 
   // Refresh key to bust image cache after updates
   const [refreshKey, setRefreshKey] = useState(0);
@@ -217,6 +218,15 @@ export default function Admin() {
     } catch { showToast('Gagal memuat promo banners', 'error'); }
   }, []);
 
+  const loadContactMessages = useCallback(async () => {
+    try {
+      const token = getAuthToken();
+      const res = await fetch('/api/admin/contact-messages', { headers: { Authorization: `Bearer ${token}` } });
+      const json = await res.json();
+      if (json.success) setContactMessages(json.data);
+    } catch { showToast('Gagal memuat pesan masuk', 'error'); }
+  }, []);
+
   const loadItems = useCallback(async (gameId) => {
     if (!gameId) { setGameItems([]); return; }
     try {
@@ -232,8 +242,8 @@ export default function Admin() {
   useEffect(() => {
     if (!userData) return;
     setLoading(true);
-    Promise.all([loadGames(), loadUsers(), loadCategories(), loadCarouselSlides(), loadPromos(), loadPromoBanners()]).finally(() => setLoading(false));
-  }, [userData, loadGames, loadUsers, loadCategories, loadCarouselSlides, loadPromos, loadPromoBanners]);
+    Promise.all([loadGames(), loadUsers(), loadCategories(), loadCarouselSlides(), loadPromos(), loadPromoBanners(), loadContactMessages()]).finally(() => setLoading(false));
+  }, [userData, loadGames, loadUsers, loadCategories, loadCarouselSlides, loadPromos, loadPromoBanners, loadContactMessages]);
 
   useEffect(() => {
     if (activeTab === 'items' && selectedGame) loadItems(selectedGame);
@@ -519,6 +529,19 @@ export default function Admin() {
     } catch { showToast('Gagal menghapus banner promo', 'error'); }
   };
 
+  const handleDeleteMessage = async (id) => {
+    if (!confirm('Yakin ingin menghapus pesan ini?')) return;
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`/api/admin/contact-messages/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      const json = await res.json();
+      if (json.success) {
+        showToast(json.message);
+        loadContactMessages();
+      } else showToast(json.message, 'error');
+    } catch { showToast('Gagal menghapus pesan', 'error'); }
+  };
+
   // ---- UI ----
   const formatPrice = (p) => new Intl.NumberFormat('id-ID').format(p || 0);
   const activeGame = games.find(g => g.id === selectedGame);
@@ -532,6 +555,7 @@ export default function Admin() {
     { key: 'categories', label: 'Categories', icon: '🏷️' },
     { key: 'carousel', label: 'Carousel', icon: '📺' },
     { key: 'promos', label: 'Promos', icon: '🔥' },
+    { key: 'messages', label: 'Pesan', icon: '✉️' },
   ];
 
   return (
@@ -962,6 +986,50 @@ export default function Admin() {
                       </div>
                     </>
                   )}
+                </section>
+              )}
+
+              {activeTab === 'messages' && (
+                <section>
+                  <div className="admin-section-header">
+                    <p className="admin-section-desc">{contactMessages.length} pesan/keluhan masuk</p>
+                  </div>
+                  <div className="admin-table-wrap">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Username</th>
+                          <th>Email</th>
+                          <th>Pesan / Keluhan</th>
+                          <th>User ID</th>
+                          <th>Tanggal</th>
+                          <th style={{ width: 100 }}>Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {contactMessages.length === 0 ? (
+                          <tr><td colSpan={6} className="admin-empty">Belum ada pesan masuk</td></tr>
+                        ) : contactMessages.map(msg => (
+                          <tr key={msg.id}>
+                            <td><span className="admin-game-name">{msg.user?.username || 'Guest'}</span></td>
+                            <td>
+                              {msg.user?.email ? (
+                                <a href={`mailto:${msg.user.email}`} style={{ color: '#00f2ff', textDecoration: 'none' }}>{msg.user.email}</a>
+                              ) : '-'}
+                            </td>
+                            <td style={{ whiteSpace: 'normal', wordBreak: 'break-all', minWidth: 200 }}>{msg.message}</td>
+                            <td><code className="admin-code">{msg.userId}</code></td>
+                            <td style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{new Date(msg.createdAt).toLocaleString('id-ID')}</td>
+                            <td>
+                              <button className="admin-btn-sm admin-btn-delete" onClick={() => handleDeleteMessage(msg.id)}>
+                                Hapus
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </section>
               )}
             </>
