@@ -4,7 +4,7 @@
  * Handles 401 responses by clearing session and redirecting to login
  */
 
-const API_BASE = '';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 /**
  * Get auth token from sessionStorage
