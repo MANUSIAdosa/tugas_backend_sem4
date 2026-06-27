@@ -5,7 +5,7 @@ import Modal from './Modal';
 import Input from './Input';
 import FileInput from './FileInput';
 
-const emptyGameForm = { name: '', slug: '', bgPosition: '', hasZone: true, badge: '', categoryId: '' };
+const emptyGameForm = { name: '', slug: '', bgPosition: '', hasZone: true, badge: '', categoryId: '', zoneOptions: '' };
 const emptyItemForm = { qty: '', itemName: '', originalPrice: '', discountPercent: '0' };
 
 export default function GameManager({ games, categories, showToast, onRefresh, refreshKey, activeTab, onRefreshComplete }) {
@@ -41,6 +41,7 @@ export default function GameManager({ games, categories, showToast, onRefresh, r
     if (gameFiles.itemIcon) fd.append('itemIcon', gameFiles.itemIcon);
     fd.append('badge', gameForm.badge);
     fd.append('categoryId', gameForm.categoryId);
+    fd.append('zoneOptions', JSON.stringify(gameForm.zoneOptions ? gameForm.zoneOptions.split(',').map(s => s.trim()).filter(Boolean) : []));
     if (removeImages.logo) fd.append('removeLogo', 'true');
     if (removeImages.bg) fd.append('removeBg', 'true');
     if (removeImages.itemIcon) fd.append('removeIcon', 'true');
@@ -119,7 +120,8 @@ export default function GameManager({ games, categories, showToast, onRefresh, r
         setGameForm({
           name: g.name || '', slug: g.slug || '',
           bgPosition: g.bgPosition || '', hasZone: g.hasZone !== false,
-          badge: g.badge || '', categoryId: g.categoryId || ''
+          badge: g.badge || '', categoryId: g.categoryId || '',
+          zoneOptions: Array.isArray(g.zoneOptions) ? g.zoneOptions.join(', ') : ''
         });
         setHasImages({ logo: g.hasLogo || false, bg: g.hasBg || false, icon: g.hasIcon || false });
         setGameFiles({ logo: null, bg: null, itemIcon: null });
@@ -325,6 +327,13 @@ export default function GameManager({ games, categories, showToast, onRefresh, r
               </select>
             </div>
             <div className="admin-field">
+              <label>Opsi Server / Zone</label>
+              <input type="text" value={gameForm.zoneOptions}
+                onChange={e => setGameForm(p => ({ ...p, zoneOptions: e.target.value }))}
+                placeholder="Asia, America, Europe" />
+              <div className="admin-field-hint">Pisahkan dengan koma. Jika diisi akan menjadi dropdown.</div>
+            </div>
+            <div className="admin-field">
               <label>Badge</label>
               <select value={gameForm.badge}
                 onChange={e => setGameForm(p => ({ ...p, badge: e.target.value }))}>
@@ -386,6 +395,13 @@ export default function GameManager({ games, categories, showToast, onRefresh, r
                 <option value="true">Ya</option>
                 <option value="false">Tidak</option>
               </select>
+            </div>
+            <div className="admin-field">
+              <label>Opsi Server / Zone</label>
+              <input type="text" value={gameForm.zoneOptions}
+                onChange={e => setGameForm(p => ({ ...p, zoneOptions: e.target.value }))}
+                placeholder="Asia, America, Europe" />
+              <div className="admin-field-hint">Pisahkan dengan koma. Jika diisi akan menjadi dropdown.</div>
             </div>
             <div className="admin-field">
               <label>Badge</label>

@@ -58,6 +58,7 @@ model games {
   zoneIdPlaceholder  String    @default("Zone ID")
   zoneIdHint         String    @default("4 DIGIT")
   zoneIdMaxLength    Int       @default(4)
+  zoneOptions        String[]
 
   // Embedded Document: Katalog harga diamond/robux/VP
   items       TopUpItem[]

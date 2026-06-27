@@ -58,6 +58,12 @@
     background-attachment: fixed;
 }
 
+@media (max-width: 768px) {
+    .game-bg {
+        background-attachment: scroll;
+    }
+}
+
 @keyframes fadeInUp {
     0% {
         transform: translateY(30px);
@@ -88,6 +94,14 @@
     box-shadow: 0 -20vh 100px rgba(0, 0, 0, 0.3);
 }
 
+/* Disable expensive background-position animation on mobile */
+@media (max-width: 768px) {
+    .game-content {
+        animation: fadeInUp 0.8s ease 0.1s both;
+        background-size: auto;
+    }
+}
+
 @keyframes homeBgDrift {
   0%   { background-position: 0% 20%; }
   50%  { background-position: 100% 80%; }
@@ -114,7 +128,7 @@
 .game-content .game-input-container .game-input-id-content {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .game-content .game-input-container::before {
@@ -170,11 +184,33 @@
     top: 28%;
 }
 
-.game-content .game-id-section .game-input-group .game-input-wrapper .game-limit {
-    position: absolute;
-    right: 5%;
+.game-content .game-id-section .game-input-group .game-limit {
+    display: block;
+    text-align: right;
     font-size: .8rem;
     color: rgba(245, 245, 245,.5);
+    margin-top: 4px;
+    padding-right: 1rem;
+}
+
+.game-content .game-id-section .game-input-group select {
+    background-color: rgba(245, 245, 245,.7);
+    padding: 1rem 3rem;
+    border-radius: 16px;
+    outline: none;
+    border: none;
+    flex-grow: 1;
+    width: 100%;
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    appearance: auto;
+    -webkit-appearance: auto;
+}
+
+.game-content .game-id-section .game-input-group select option {
+    color: #333;
+    background: #fff;
 }
 
 .game-content .game-id-section .game-input-group input {

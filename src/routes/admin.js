@@ -164,7 +164,8 @@ router.post('/admin/games', imageUpload.fields([
       name, slug, badge, categoryId,
       hasZone, bgPosition,
       userIdLabel, userIdPlaceholder,
-      zoneIdLabel, zoneIdPlaceholder, zoneIdHint, zoneIdMaxLength
+      zoneIdLabel, zoneIdPlaceholder, zoneIdHint, zoneIdMaxLength,
+      zoneOptions
     } = req.body;
 
     if (!name || !slug) {
@@ -193,6 +194,7 @@ router.post('/admin/games', imageUpload.fields([
         zoneIdPlaceholder: zoneIdPlaceholder || "Zone ID",
         zoneIdHint: zoneIdHint || "4 DIGIT",
         zoneIdMaxLength: zoneIdMaxLength ? parseInt(zoneIdMaxLength) : 4,
+        zoneOptions: zoneOptions ? { set: JSON.parse(zoneOptions) } : { set: [] },
         items: { set: [] }
       }
     });
@@ -263,6 +265,7 @@ router.put('/admin/games/:id', imageUpload.fields([
     if (req.body.categoryId !== undefined) updateData.categoryId = req.body.categoryId || null;
     if (req.body.hasZone !== undefined) updateData.hasZone = req.body.hasZone !== 'false';
     if (req.body.zoneIdMaxLength !== undefined) updateData.zoneIdMaxLength = parseInt(req.body.zoneIdMaxLength);
+    if (req.body.zoneOptions !== undefined) updateData.zoneOptions = { set: JSON.parse(req.body.zoneOptions) };
 
     // Handle image uploads — only update if a new file was sent
     if (req.files?.logo?.[0]?.buffer) updateData.logo = req.files.logo[0].buffer;

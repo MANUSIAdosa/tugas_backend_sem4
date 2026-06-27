@@ -34,26 +34,28 @@ class TransactionService extends BaseService {
       }
     });
 
-    // Potong poin jika digunakan
-    if (billing.pointsUsed > 0) {
+    // Potong poin jika digunakan — skip untuk demo_user
+    if (billing.pointsUsed > 0 && user.username !== 'demo_user') {
       await this.prisma.users.update({
         where: { id: userId },
         data: { points: { decrement: billing.pointsUsed } }
       });
     }
 
-    // Tambah poin reward (dynamic rate based on user tier)
-    const config = await this.pointConfigService.getConfigForUser(userId);
-    const rewardPoints = Math.floor(billing.totalPaid * config.rewardRate);
-    if (rewardPoints > 0) {
-      await this.prisma.users.update({
-        where: { id: userId },
-        data: { points: { increment: rewardPoints } }
-      });
-    }
+    // Tambah poin reward — skip untuk demo_user
+    if (user.username !== 'demo_user') {
+      const config = await this.pointConfigService.getConfigForUser(userId);
+      const rewardPoints = Math.floor(billing.totalPaid * config.rewardRate);
+      if (rewardPoints > 0) {
+        await this.prisma.users.update({
+          where: { id: userId },
+          data: { points: { increment: rewardPoints } }
+        });
+      }
 
-    // Update user level based on new spending
-    await this.pointConfigService.recalculateLevel(userId);
+      // Update user level based on new spending
+      await this.pointConfigService.recalculateLevel(userId);
+    }
 
     return newTransaction;
   }
@@ -117,12 +119,20 @@ class TransactionService extends BaseService {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    // Exclude demo_user from leaderboard
+    const demoUser = await this.prisma.users.findUnique({
+      where: { username: 'demo_user' },
+      select: { id: true }
+    });
+    const excludeUserId = demoUser?.id;
+
     // Aggregate total spent per user in the last 30 days
     const result = await this.prisma.transactions.groupBy({
       by: ['userId'],
       where: {
         createdAt: { gte: thirtyDaysAgo },
-        status: 'SUCCESS'
+        status: 'SUCCESS',
+        ...(excludeUserId ? { userId: { not: excludeUserId } } : {})
       },
       _sum: { totalPaid: true },
       orderBy: { _sum: { totalPaid: 'desc' } },
