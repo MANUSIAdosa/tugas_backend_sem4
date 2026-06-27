@@ -101,6 +101,7 @@ router.get('/games/:slug', async (req, res) => {
       zoneIdPlaceholder: game.zoneIdPlaceholder,
       zoneIdHint: game.zoneIdHint,
       zoneIdMaxLength: game.zoneIdMaxLength,
+      zoneOptions: game.zoneOptions,
       items: game.items,
       createdAt: game.createdAt,
       updatedAt: game.updatedAt

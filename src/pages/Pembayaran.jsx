@@ -28,6 +28,7 @@ const Pembayaran = () => {
   // State untuk konfigurasi poin dinamis
   const [pointConfig, setPointConfig] = useState(null);
   const [rewardRate, setRewardRate] = useState(0.01);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Fetch konfigurasi poin user
   useEffect(() => {
@@ -54,6 +55,10 @@ const Pembayaran = () => {
   const totalAkhir = totalSebelumDiskon - nilaiDiskon;
 
   const handlePayment = async () => {
+    // Prevent duplicate submission
+    if (isProcessing) return;
+    setIsProcessing(true);
+
     // Ambil data user dari session
     const sessionData = sessionStorage.getItem('userData');
     if (!sessionData) {
@@ -97,8 +102,9 @@ const Pembayaran = () => {
           nickname: sessionUser?.username || "User"
         }));
 
-        // Lempar data ke halaman Summary
+        // Lempar data ke halaman Summary (replace: true agar tidak bisa back ke halaman pembayaran)
         navigate('/summary', {
+          replace: true,
           state: {
             ...result.data,
             nickname: sessionUser?.username || "User"
@@ -110,6 +116,8 @@ const Pembayaran = () => {
     } catch (error) {
       console.error("Payment error:", error);
       alert("Terjadi kesalahan koneksi saat memproses pembayaran.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -204,8 +212,15 @@ const Pembayaran = () => {
                 </div>
               </div>
               <div className="payment-card-footer">
-                <button onClick={handlePayment} className="btn payment-btn-redeem w-100">
-                  Konfirm & Bayar
+                <button onClick={handlePayment} className="btn payment-btn-redeem w-100" disabled={isProcessing}>
+                  {isProcessing ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Memproses...
+                    </>
+                  ) : (
+                    "Konfirm & Bayar"
+                  )}
                 </button>
               </div>
             </div>

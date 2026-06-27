@@ -173,8 +173,21 @@ class UserService extends BaseService {
   }
 
   async deleteUser(userId) {
+    // Cegah penghapusan demo_user
+    const user = await this.prisma.users.findUnique({ where: { id: userId } });
+    if (!user) throw new Error("User tidak ditemukan");
+    if (user.username === 'demo_user') throw new Error("Akun demo tidak dapat dihapus");
+
     // Hapus transaksi terkait terlebih dahulu
     await this.prisma.transactions.deleteMany({
+      where: { userId: userId }
+    });
+    // Hapus contact messages terkait
+    await this.prisma.contact_messages.deleteMany({
+      where: { userId: userId }
+    });
+    // Hapus voucher redemptions terkait
+    await this.prisma.voucher_redemptions.deleteMany({
       where: { userId: userId }
     });
     // Baru hapus user

@@ -195,6 +195,14 @@
   100% { background-position: 0% 20%; }
 }
 
+/* Disable expensive background animation on mobile and reduced-motion */
+@media (max-width: 768px) {
+  .home-bg-layer {
+    animation: none;
+    background-size: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-bg-layer {
     animation: none;

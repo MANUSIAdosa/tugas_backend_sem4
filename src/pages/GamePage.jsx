@@ -216,21 +216,36 @@ const GamePage = () => {
               </div>
             </div>
 
-            {game?.hasZone && (
-              <div className="game-input-group">
-                <p>{game?.zoneIdLabel || "ZONE ID"}</p>
-                <div className="game-input-wrapper">
-                  <span className="game-icon">🌍</span>
-                  <input
-                    type="text"
-                    placeholder={game?.zoneIdPlaceholder || "Zone ID"}
-                    maxLength={game?.zoneIdMaxLength || undefined}
-                    onChange={(e) => { setZoneID(e.target.value) }}
-                  />
+            {game?.hasZone && (() => {
+              const hasOptions = game.zoneOptions && game.zoneOptions.length > 0;
+              return (
+                <div className="game-input-group">
+                  <p>{game?.zoneIdLabel || "ZONE ID"}</p>
+                  <div className="game-input-wrapper">
+                    <span className="game-icon">🌍</span>
+                    {hasOptions ? (
+                      <select
+                        defaultValue=""
+                        onChange={(e) => { setZoneID(e.target.value) }}
+                      >
+                        <option value="" disabled>{game?.zoneIdPlaceholder || "Pilih Server"}</option>
+                        {game.zoneOptions.map((opt, i) => (
+                          <option key={i} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder={game?.zoneIdPlaceholder || "Zone ID"}
+                        maxLength={game?.zoneIdMaxLength || undefined}
+                        onChange={(e) => { setZoneID(e.target.value) }}
+                      />
+                    )}
+                  </div>
                   {game?.zoneIdHint && <span className="game-limit">{game.zoneIdHint}</span>}
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
         {/* ======= INPUT ID END ======== */}
