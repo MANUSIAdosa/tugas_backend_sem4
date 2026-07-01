@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import '../styles/Reset.css';
 
-const Reset = () => {
-  const [email, setEmail] = useState('');
+const ResetConfirm = () => {
+  const { token } = useParams();
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    newPassword: '',
+    confirmPassword: ''
+  });
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+    setError('');
+    setSuccessMessage('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,41 +31,51 @@ const Reset = () => {
     setSuccessMessage('');
     setIsLoading(true);
 
-    if (!email.trim()) {
-      setError('Email wajib diisi');
+    if (!formData.newPassword.trim() || !formData.confirmPassword.trim()) {
+      setError('Semua field harus diisi');
       setIsLoading(false);
       return;
     }
 
-    // Validasi email sederhana
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Format email tidak valid');
+    if (formData.newPassword.length < 6) {
+      setError('Password minimal 6 karakter');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      setError('Konfirmasi password tidak cocok');
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await fetch('/api/forgot-password', {
+      const response = await fetch(`/api/reset-password/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() })
+        body: JSON.stringify({
+          newPassword: formData.newPassword,
+          confirmPassword: formData.confirmPassword
+        })
       });
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        setError(result.message || 'Gagal mengirim email reset');
+        setError(result.message || 'Reset password gagal');
         setIsLoading(false);
         return;
       }
 
-      setSuccessMessage(
-        'Jika email terdaftar, link reset password akan dikirim. Cek inbox/spam folder.'
-      );
-      setEmail('');
+      setSuccessMessage('Password berhasil direset! Silakan login dengan password baru.');
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
     } catch (err) {
       setError('Terjadi kesalahan. Silakan coba lagi.');
-      console.error('Forgot password error:', err);
+      console.error('Reset password error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +85,7 @@ const Reset = () => {
     <>
       <main className="reset-main">
         <div className="reset-container">
-          <h2>Lupa Password</h2>
+          <h2>Buat Password Baru</h2>
 
           {successMessage && (
             <div className="alert alert-success" role="alert">
@@ -75,18 +101,27 @@ const Reset = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-              <label htmlFor="email" className="form-label">Email</label>
+              <label htmlFor="newPassword" className="form-label">Password Baru</label>
               <input
-                type="email"
+                type="password"
                 className="form-control"
-                id="email"
-                placeholder="Masukkan email terdaftar"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setError('');
-                  setSuccessMessage('');
-                }}
+                id="newPassword"
+                placeholder="Minimal 6 karakter"
+                value={formData.newPassword}
+                onChange={handleChange}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="confirmPassword" className="form-label">Konfirmasi Password</label>
+              <input
+                type="password"
+                className="form-control"
+                id="confirmPassword"
+                placeholder="Ulangi password baru"
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 disabled={isLoading}
               />
             </div>
@@ -99,9 +134,9 @@ const Reset = () => {
               {isLoading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Mengirim...
+                  Menyimpan...
                 </>
-              ) : 'Kirim Link Reset'}
+              ) : 'Simpan Password Baru'}
             </button>
 
             <div className="row mt-3">
@@ -127,4 +162,4 @@ const Reset = () => {
   );
 };
 
-export default Reset;
+export default ResetConfirm;
