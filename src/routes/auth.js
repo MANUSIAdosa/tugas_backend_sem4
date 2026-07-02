@@ -1,5 +1,6 @@
 import express from 'express';
-import { validateRegister, validateLogin, validateResetPassword } from '../middleware/validate.js';
+import { validateRegister, validateLogin, validateChangePassword } from '../middleware/validate.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -66,38 +67,38 @@ router.post('/login', validateLogin, async (req, res) => {
 
 /**
  * @openapi
- * /api/reset-password:
- *   post:
- *     summary: Reset password
+ * /api/change-password:
+ *   put:
+ *     summary: Change password (authenticated)
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [emailOrUsername, newPassword, confirmPassword]
+ *             required: [oldPassword, newPassword, confirmPassword]
  *             properties:
- *               emailOrUsername: { type: string }
+ *               oldPassword: { type: string }
  *               newPassword: { type: string, minLength: 6 }
  *               confirmPassword: { type: string }
  *     responses:
- *       200: { description: Password reset successful }
- *       400: { description: Validation error }
+ *       200: { description: Password changed successfully }
+ *       400: { description: Validation error / wrong old password }
+ *       401: { description: Unauthorized }
  */
-router.post('/reset-password', validateResetPassword, async (req, res) => {
+router.put('/change-password', authenticate, validateChangePassword, async (req, res) => {
   try {
-    const { emailOrUsername, newPassword, confirmPassword } = req.body;
+    const { oldPassword, newPassword, confirmPassword } = req.body;
 
     if (newPassword !== confirmPassword) {
       return req.userService.errorResponse(res, "Konfirmasi password tidak cocok");
     }
-    if (newPassword.length < 6) {
-      return req.userService.errorResponse(res, "Password minimal 6 karakter");
-    }
 
-    await req.userService.resetPassword(emailOrUsername, newPassword);
-    res.json({ success: true, message: "Password berhasil direset" });
+    await req.userService.changePassword(req.user.userId, oldPassword, newPassword);
+    res.json({ success: true, message: "Password berhasil diubah" });
   } catch (err) {
     req.userService.errorResponse(res, err.message);
   }
