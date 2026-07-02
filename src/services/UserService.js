@@ -149,27 +149,35 @@ class UserService extends BaseService {
     return user.points;
   }
 
-  async resetPassword(emailOrUsername, newPassword) {
-    if (!emailOrUsername || !newPassword) {
-      throw new Error("Email/Username dan password baru wajib diisi");
+  async changePassword(userId, oldPassword, newPassword) {
+    if (!oldPassword || !newPassword) {
+      throw new Error("Password lama dan password baru wajib diisi");
     }
     if (newPassword.length < 6) {
       throw new Error("Password minimal 6 karakter");
     }
 
-    const user = await this.prisma.users.findFirst({
-      where: { OR: [{ email: emailOrUsername }, { username: emailOrUsername }] }
+    const user = await this.prisma.users.findUnique({
+      where: { id: userId }
     });
 
-    if (!user) throw new Error("Email/Username tidak ditemukan");
+    if (!user) throw new Error("User tidak ditemukan");
 
-    // Hash new password before updating
+    // Verifikasi password lama
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isOldPasswordValid) {
+      throw new Error("Password lama salah");
+    }
+
+    // Hash password baru
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    return await this.prisma.users.update({
-      where: { id: user.id },
+    await this.prisma.users.update({
+      where: { id: userId },
       data: { password: hashedPassword }
     });
+
+    return { message: "Password berhasil diubah" };
   }
 
   async deleteUser(userId) {
