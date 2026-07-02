@@ -5,7 +5,7 @@ import '../styles/Reset.css';
 
 const Reset = () => {
   const [formData, setFormData] = useState({
-    emailOrUsername: '',
+    oldPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
@@ -30,7 +30,7 @@ const Reset = () => {
     setSuccessMessage('');
     setIsLoading(true);
 
-    if (!formData.emailOrUsername.trim() || !formData.newPassword.trim() || !formData.confirmPassword.trim()) {
+    if (!formData.oldPassword.trim() || !formData.newPassword.trim() || !formData.confirmPassword.trim()) {
       setError('Semua field harus diisi');
       setIsLoading(false);
       return;
@@ -49,11 +49,22 @@ const Reset = () => {
     }
 
     try {
-      const response = await fetch('/api/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const token = sessionStorage.getItem('authToken');
+
+      if (!token) {
+        setError('Anda harus login terlebih dahulu');
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch('/api/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
-          emailOrUsername: formData.emailOrUsername,
+          oldPassword: formData.oldPassword,
           newPassword: formData.newPassword,
           confirmPassword: formData.confirmPassword
         })
@@ -62,13 +73,13 @@ const Reset = () => {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        setError(result.message || 'Reset password gagal');
+        setError(result.message || 'Gagal mengubah password');
         setIsLoading(false);
         return;
       }
 
-      setSuccessMessage('Password berhasil direset! Silakan login dengan password baru.');
-      setFormData({ emailOrUsername: '', newPassword: '', confirmPassword: '' });
+      setSuccessMessage('Password berhasil diubah! Silakan login dengan password baru.');
+      setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
 
       setTimeout(() => {
         navigate('/login');
@@ -76,7 +87,7 @@ const Reset = () => {
 
     } catch (err) {
       setError('Terjadi kesalahan. Silakan coba lagi.');
-      console.error('Reset password error:', err);
+      console.error('Change password error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +97,7 @@ const Reset = () => {
     <>
 <main className='reset-main'>
         <div className="reset-container">
-          <h2>Reset Password</h2>
+          <h2>Ubah Password</h2>
 
           {successMessage && (
             <div className="alert alert-success" role="alert">
@@ -102,25 +113,25 @@ const Reset = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-              <label htmlFor="emailOrUsername" className="form-label">Username/Email</label>
+              <label htmlFor="oldPassword" className="form-label">Password Lama</label>
               <input
-                type="text"
+                type="password"
                 className="form-control"
-                id="emailOrUsername"
-                placeholder="Enter your username/email"
-                value={formData.emailOrUsername}
+                id="oldPassword"
+                placeholder="Masukkan password lama"
+                value={formData.oldPassword}
                 onChange={handleChange}
                 disabled={isLoading}
               />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="newPassword" className="form-label">New Password</label>
+              <label htmlFor="newPassword" className="form-label">Password Baru</label>
               <input
                 type="password"
                 className="form-control"
                 id="newPassword"
-                placeholder="Enter your new password"
+                placeholder="Masukkan password baru"
                 value={formData.newPassword}
                 onChange={handleChange}
                 disabled={isLoading}
@@ -128,12 +139,12 @@ const Reset = () => {
             </div>
 
             <div className="mb-3">
-              <label htmlFor="confirmPassword" className="form-label">Confirm New Password</label>
+              <label htmlFor="confirmPassword" className="form-label">Konfirmasi Password Baru</label>
               <input
                 type="password"
                 className="form-control"
                 id="confirmPassword"
-                placeholder="Confirm your new password"
+                placeholder="Konfirmasi password baru"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 disabled={isLoading}
@@ -148,9 +159,9 @@ const Reset = () => {
               {isLoading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Resetting...
+                  Mengubah...
                 </>
-              ) : 'Reset Password'}
+              ) : 'Ubah Password'}
             </button>
 
             <div className="row mt-3">
