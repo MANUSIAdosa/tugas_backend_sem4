@@ -12,6 +12,10 @@ ANGGOTA TIM
 4. NIM: 241110265 | Trevan Edgard
 5. NIM: 241110258 | Richie Hujaya
 
+TEMA ATAU TOPIK
+-----------
+- smart economy topup game
+
 TEKNOLOGI YANG DIGUNAKAN
 ------------------------
 - Runtime      : Node.js
@@ -21,6 +25,8 @@ TEKNOLOGI YANG DIGUNAKAN
 - Database     : MongoDB
 - Styling      : CSS
 - File Upload  : Multer
+- Authenticate : JWT
+- Documentation: swagger (/api-docs)
 - Tool         : Git, GitHub
 
 LINK TEMPLATE
@@ -35,3 +41,19 @@ INOVASI DAN KREATIVITAS
 - Upload foto profil dengan penyimpanan berbasis memory (tanpa disk storage)
 - Tampilan responsif dengan animasi interaktif pada halaman utama
 - Riwayat transaksi lengkap per user dengan detail produk
+
+LINK HOSTINGAN
+------------------------
+1. NIM: 241110249 | Anthony Louis |  https://rasttopupn1.vercel.app/
+2. NIM: 241111143 | Suryanata Yaptanto | https://tokorast7.vercel.app/
+3. NIM: 241110159 | Vincent Oswaldo Tio | https://tugasbackendrast7.vercel.app/
+4. NIM: 241110265 | Trevan Edgard |  https://rast-7.vercel.app/ 
+5. NIM: 241110258 | Richie Hujaya |  https://rasttopup.vercel.app/
+
+USERNAME PASSWORD (ADMIN)
+------------------------
+username: adminkuatdanbijaksana
+password: admin123
+
+NILAI HARAPAN KAMI: 98
+ALASAN: semua fitur berjalan dengan baik, backend dan frontend terhubung, sudah dideploy, dan dikerjakan dengan maksimal. kami rasa itu sudah cukup pantas :)
